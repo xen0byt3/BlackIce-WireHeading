@@ -56,9 +56,9 @@ Take **one screenshot per phase** of the whole terminal window (Practice Termina
 - Problems met and fixes (1 to 2 lines):
 - Practice Terminal users: paste final_report.txt and FINAL_REPORT_CLIENT.txt below
 - Honor statement: I typed every command myself and used only the authorized targets.
-- The Required screenshots
+- The 13 Required screenshots
 
 ````
 1. Create a  repository named `kali-command-lab-<yourcyberhandle>
-2. **Settings > Collaborators > Add people > `xen0byt3`** (Write access).
+2. Settings > Collaborators > Add people > `xen0byt3` (Write access).
 ````
