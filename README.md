@@ -61,6 +61,4 @@ Take **one screenshot per phase** of the whole terminal window (Practice Termina
 ````
 1. Create a  repository named `kali-command-lab-<yourcyberhandle>
 2. **Settings > Collaborators > Add people > `xen0byt3`** (Write access).
-```markdown
-
 ````
