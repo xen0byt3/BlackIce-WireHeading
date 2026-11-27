@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kali Terminal Simulator | Black Ice WireHeading</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'><text y='9' font-size='9'>🧊</text></svg>">
+<style>
+*{box-sizing:border-box;margin:0}
+:root{--bg:#050a12;--pn:#0b1522;--ln:#17324b;--ac:#00d4ff;--tx:#d8e8f6;--mu:#8aa3b8;--ok:#3be39a;--fs:14px;color-scheme:dark}
+html,body{height:100%}
+body{background:radial-gradient(1000px 500px at 85% -10%,#0a2540 0%,transparent 62%) fixed,#050a12;color:var(--tx);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column}
+button,input{font:inherit;color:inherit}button{cursor:pointer}
+header{display:flex;align-items:center;gap:14px;padding:10px 16px;border-bottom:1px solid var(--ln);background:rgba(8,16,28,.95);flex-wrap:wrap}
+header b{color:#9ff0ff;letter-spacing:.04em}header small{color:var(--mu)}
+header a{margin-left:auto;color:#031018;background:linear-gradient(90deg,#0a7aa0,#00d4ff);padding:6px 14px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px}
+main{flex:1;display:grid;grid-template-columns:1fr 310px;gap:14px;padding:14px;min-height:0}
+#win{display:flex;flex-direction:column;min-height:0;border:1px solid #2a3b52;border-radius:12px;overflow:hidden;background:#0b0e13;box-shadow:0 12px 40px rgba(0,0,0,.55)}
+.tbar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:linear-gradient(#222b38,#1a212b);border-bottom:1px solid #2a3b52;font-size:13px}
+.dots i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px}.dots i:nth-child(1){background:#ff5f57}.dots i:nth-child(2){background:#febc2e}.dots i:nth-child(3){background:#28c840}
+#ttl{flex:1;text-align:center;color:#c8d3e0;font-family:ui-monospace,Menlo,Consolas,monospace;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#tabs{display:flex;background:#141a22;border-bottom:1px solid #2a3b52;overflow-x:auto}
+.tab{display:flex;gap:8px;align-items:center;padding:6px 14px;font-size:13px;color:var(--mu);border-right:1px solid #2a3b52;white-space:nowrap;cursor:pointer}
+.tab.on{background:#0b0e13;color:#e6edf3;box-shadow:inset 0 -2px 0 var(--ac)}
+.tab .x{opacity:.6;padding:0 4px;border-radius:4px}.tab .x:hover{background:#3a2430;opacity:1}
+#nt{background:none;border:0;padding:6px 14px;color:var(--ac);font-size:16px}
+#screens{flex:1;position:relative;min-height:0}
+.scr{position:absolute;inset:0;overflow:auto;padding:12px 16px 40px;font:var(--fs)/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;display:none;background:#0b0e13;color:#e6edf3}
+.scr.on{display:block}
+pre.log{margin:0;white-space:pre-wrap;word-break:break-word;font:inherit}
+.row{display:flex;align-items:center}
+.p2l{white-space:pre;color:#2f7bff;font-weight:700}
+.in{flex:1;min-width:0;background:transparent;border:0;outline:0;color:#e6edf3;font:inherit;caret-color:#9ff0ff}
+.br{color:#5aa0ff}.un{color:#2f7bff;font-weight:700}.pa{color:#fff;font-weight:700}
+.a1,.a01{font-weight:700}.a2{opacity:.6}.a7{background:#e6edf3;color:#0b0e13}.a31{color:#ff6b6b}.a32{color:#5af78e}.a33{color:#f3f99d}.a34{color:#6ea8ff}.a35{color:#ff92d0}.a36{color:#57e0e0}
+.side{display:flex;flex-direction:column;gap:12px;overflow:auto;min-height:0}
+.card{background:var(--pn);border:1px solid var(--ln);border-radius:12px;padding:12px 14px}
+.card h3{font-size:14px;color:#9ff0ff;margin-bottom:6px}
+.card p,.card li{color:var(--mu);font-size:13px}.card ul{padding-left:18px}
+.bar{height:6px;border-radius:4px;background:#0f2236;overflow:hidden;margin:6px 0 10px}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#00ff9c,#00d4ff);transition:width .4s}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{font:12px ui-monospace,monospace;border:1px solid var(--ln);border-radius:16px;padding:2px 10px;color:var(--mu);background:#071220}
+.chips span.on{color:#031018;background:var(--ok);border-color:var(--ok);font-weight:700}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.ctl button{background:#0e3552;border:1px solid var(--ln);border-radius:8px;padding:5px 12px;font-size:13px}.ctl button:hover{border-color:var(--ac)}
+.ctl label{font-size:13px;color:var(--mu)}
+kbd{background:#12283f;border:1px solid var(--ln);border-radius:4px;padding:0 5px;font-size:12px}
+#ws{position:fixed;inset:0;background:rgba(2,6,12,.8);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+#ws.on{display:flex}
+.wsb{width:min(980px,100%);max-height:90vh;display:flex;flex-direction:column;background:#10161f;border:1px solid #2a3b52;border-radius:12px;overflow:hidden}
+.wsh{display:flex;gap:10px;align-items:center;padding:10px 14px;background:#1a212b;border-bottom:1px solid #2a3b52}
+.wsh b{flex:1;font-size:13px}.wsh button{background:#3a2430;border:0;border-radius:6px;padding:4px 12px}
+#wf{width:100%;padding:8px 12px;background:#0b0e13;border:2px solid #2a3b52;outline:0;font:13px ui-monospace,monospace}
+#wf.ok{border-color:#3be39a;background:#0f2a22}#wf.bad{border-color:#ff5c8a;background:#2a0f1a}
+.wst{overflow:auto;font:12px ui-monospace,monospace}
+.wst table{border-collapse:collapse;width:100%}.wst td,.wst th{padding:3px 10px;text-align:left;white-space:nowrap}.wst th{background:#1a212b;position:sticky;top:0}
+.wst tr:nth-child(even){background:#0d141d}.wst tr.h{background:#12263a}.wst tr.s{background:#142a1f}
+@media(max-width:900px){main{grid-template-columns:1fr}.side{max-height:none}#win{height:70vh}}
+/* desktop v2 */
+#desk{position:relative;min-height:0;height:100%;border:1px solid #2a3b52;border-radius:12px;overflow:hidden;background:radial-gradient(700px 420px at 78% 18%,rgba(0,212,255,.17),transparent 65%),radial-gradient(620px 420px at 8% 92%,rgba(120,60,255,.2),transparent 65%),linear-gradient(135deg,#071427,#150d33 60%,#050a12)}
+#desk::before{content:"";position:absolute;inset:0;opacity:.07;background:url("data:image/svg+xml,%3Csvg width='28' height='49' viewBox='0 0 28 49' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z' fill='%2300d4ff' fill-rule='evenodd'/%3E%3C/svg%3E");pointer-events:none}
+#desk::after{content:"BLACK ICE  ·  KALI SIM";position:absolute;right:18px;bottom:10px;font:700 12px ui-monospace,monospace;letter-spacing:.3em;color:rgba(159,240,255,.28);pointer-events:none}
+#dpanel{position:absolute;top:0;left:0;right:0;height:30px;display:flex;align-items:center;gap:6px;padding:0 10px;background:rgba(10,14,20,.94);border-bottom:1px solid #223045;z-index:300;font-size:12px}
+.pb{background:none;border:0;color:#d8e8f6;padding:3px 10px;border-radius:5px;font-size:12px}.pb:hover,.pb.on{background:#1e2a3a}
+.pb.app{color:#9ff0ff;font-weight:700}
+#dpanel .sp{flex:1}#dpanel .st{color:#8aa3b8}
+#appm{position:absolute;top:30px;left:6px;display:none;min-width:190px;background:#10151d;border:1px solid #2a3b52;border-radius:8px;padding:6px;z-index:310;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#appm.on{display:block}#appm button{display:block;width:100%;text-align:left;background:none;border:0;padding:6px 10px;border-radius:5px;font-size:13px}#appm button:hover{background:#1f3550}
+#dicons{position:absolute;left:10px;top:40px;bottom:10px;width:calc(100% - 20px);display:flex;flex-direction:column;flex-wrap:wrap;align-content:flex-start;gap:6px;z-index:1;pointer-events:none}
+#dsys,#ditems{display:contents}
+#dicons .it{pointer-events:auto;color:#fff;text-shadow:0 1px 3px #000}
+.w{position:absolute;z-index:5;resize:both;overflow:hidden;min-width:300px;min-height:200px}
+#win{left:106px;top:44px;width:calc(58% - 106px);min-width:420px;height:calc(100% - 62px)}
+#fm{right:16px;top:60px;width:38%;height:58%;display:flex;flex-direction:column;background:#10151d;border:1px solid #2a3b52;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.55)}
+.w.hid{display:none}
+.w.max{left:8px!important;top:38px!important;width:calc(100% - 16px)!important;height:calc(100% - 46px)!important;right:auto!important}
+.dots i{cursor:pointer}
+.tbar button{background:#1b2533;border:1px solid #2a3b52;border-radius:6px;padding:1px 9px;font-size:12px}
+.fmbar{display:flex;gap:6px;padding:6px 8px;background:#161d28;border-bottom:1px solid #2a3b52;align-items:center}
+.fmbar button{background:#1b2533;border:1px solid #2a3b52;border-radius:6px;padding:2px 9px;font-size:12px;white-space:nowrap}.fmbar button:disabled{opacity:.4}
+#fmpath{flex:1;min-width:0;font:12px ui-monospace,monospace;background:#0b0e13;border:1px solid #2a3b52;border-radius:6px;padding:3px 8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#9ff0ff}
+.fmbody{flex:1;display:flex;min-height:0}
+#fmside{list-style:none;padding:8px 6px;width:112px;flex:none;background:#121923;border-right:1px solid #2a3b52;font-size:12px;overflow:auto}
+#fmside li{padding:5px 8px;border-radius:5px;cursor:pointer;color:#c8d3e0}#fmside li:hover{background:#1a2a3d}#fmside li.on{background:#1f3550;color:#fff}
+#fmmain{flex:1;padding:10px;overflow:auto;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;position:relative}
+#fmmain.fm-list{flex-direction:column;flex-wrap:nowrap;gap:2px}
+.empty{width:100%;text-align:center;color:#5d7288;font-size:12px;padding:26px 0;animation:fi .4s}
+.fmstat{padding:3px 10px;font-size:11px;color:var(--mu);border-top:1px solid #2a3b52;background:#121923}
+.it{position:relative;width:84px;flex:none;text-align:center;font-size:12px;color:#e6edf3;cursor:default;padding:6px 2px;border-radius:8px;user-select:none;overflow:visible}
+.it:hover{background:rgba(0,212,255,.12)}.it.sel{background:rgba(0,212,255,.24)}
+.it>span{display:block;word-break:break-all;line-height:1.15;margin-top:5px}
+.ic{position:relative;width:44px;height:40px;margin:0 auto}
+.ic.fld{background:linear-gradient(#5ab0ff,#2f7bff);border-radius:4px 6px 6px 6px;margin-top:8px;height:30px;width:46px}
+.ic.fld::before{content:"";position:absolute;left:0;top:-6px;width:20px;height:8px;background:#5ab0ff;border-radius:4px 4px 0 0}
+.ic.fil{width:34px;height:42px}
+.ic.fil::before{content:"";position:absolute;inset:0;background:linear-gradient(#f4f7fb,#cfd8e6);clip-path:polygon(0 0,68% 0,100% 24%,100% 100%,0 100%)}
+.ic.fil b{position:absolute;left:0;right:0;bottom:5px;text-align:center;font:700 9px ui-monospace,monospace;color:#2f3b4d}
+.ic.sh::before{background:linear-gradient(#d9ffe9,#7fe7ad)}.ic.pc::before{background:linear-gradient(#dff2ff,#8cc8ff)}
+.ic i{position:absolute;right:-9px;top:-4px;font:700 9px ui-monospace,monospace;font-style:normal;padding:0 4px;border-radius:8px;z-index:2}
+.ic i.rt{background:#ff5c8a;color:#fff}.ic i.xb{background:#3be39a;color:#04150e;top:14px}
+.it.row{display:grid;grid-template-columns:1.7fr .7fr .9fr .6fr;width:100%;text-align:left;padding:4px 8px;font-size:12px;gap:8px}
+.it.row .nm{display:flex;align-items:center;gap:8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.it.row em{font-style:normal;color:#8aa3b8;white-space:nowrap}
+.mi{display:inline-block;width:14px;height:11px;border-radius:2px;background:#5ab0ff;flex:none}.mi.f{width:10px;height:13px;background:#e5ecf5}
+/* animations */
+.it.pop{animation:dropIn .75s cubic-bezier(.2,1.5,.4,1) both,glowG 2.6s ease-out both}
+.it.pop::after{content:"";position:absolute;left:50%;top:26px;width:12px;height:12px;margin:-6px;border:2px solid #3be39a;border-radius:50%;animation:ripple 1.1s ease-out both;pointer-events:none}
+@keyframes dropIn{0%{transform:translateY(-46px) scale(.5);opacity:0}60%{transform:translateY(5px) scale(1.1);opacity:1}100%{transform:none}}
+@keyframes ripple{to{width:96px;height:96px;margin:-48px;opacity:0}}
+@keyframes glowG{from{box-shadow:0 0 0 2px rgba(59,227,154,.8),0 0 26px rgba(59,227,154,.6);background:rgba(59,227,154,.18)}to{box-shadow:0 0 0 0 transparent}}
+.it.mod{animation:glowY 1.8s ease-out}
+@keyframes glowY{from{background:rgba(254,188,46,.55);box-shadow:0 0 18px rgba(254,188,46,.6)}to{background:transparent;box-shadow:none}}
+.it.ghost{pointer-events:none;overflow:hidden}
+.it.gone{animation:goneA .8s ease-in forwards}
+@keyframes goneA{0%{opacity:1}100%{opacity:0;transform:translateY(-18px) scale(.6);width:0;padding:0;margin:0 -4px}}
+.it.shred{animation:shredA 1.2s ease-in forwards;background:rgba(255,92,138,.25)}
+@keyframes shredA{0%{filter:none}12%{transform:translateX(-4px) rotate(-3deg);filter:saturate(3) hue-rotate(-30deg)}26%{transform:translateX(4px) rotate(3deg)}40%{transform:translateX(-3px) rotate(-2deg)}100%{opacity:0;transform:translateY(30px) scaleY(.05);filter:blur(4px);width:0;padding:0;margin:0 -4px}}
+.it.row.gone,.it.row.shred{animation-name:goneR}
+@keyframes goneR{to{opacity:0;max-height:0;padding:0;transform:translateX(30px)}}
+/* notifications */
+#notes{position:absolute;top:38px;right:12px;z-index:320;display:flex;flex-direction:column;gap:8px;width:290px;pointer-events:none}
+.nt{background:rgba(20,26,36,.97);border:1px solid #2f4a6a;border-left:4px solid #3be39a;border-radius:8px;padding:8px 12px;box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:12px;color:#c8d3e0;word-break:break-all;animation:slideIn .35s ease-out both,fadeOut .5s ease-in 4.2s forwards}
+.nt b{display:block;color:#fff;font-size:13px}.nt.rm{border-left-color:#ff5c8a}.nt.md{border-left-color:#febc2e}
+@keyframes slideIn{from{transform:translateX(50px);opacity:0}}@keyframes fadeOut{to{opacity:0;transform:translateY(-8px)}}
+#tv{position:fixed;inset:0;background:rgba(2,6,12,.8);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}#tv.on{display:flex}
+#tv pre{padding:14px;overflow:auto;max-height:70vh;font:13px/1.4 ui-monospace,monospace;color:#e6edf3;background:#0b0e13;white-space:pre-wrap;word-break:break-word}
+@media(max-width:1100px){#desk{height:auto;overflow:visible;display:flex;flex-direction:column;gap:10px;padding:40px 10px 10px}
+ #dicons{position:static;width:auto;flex-direction:row;flex-wrap:wrap;height:auto}.w{position:relative!important;left:auto!important;top:auto!important;right:auto!important;width:100%!important;min-width:0}
+ #win{height:70vh!important}#fm{height:340px!important}.w.max{width:100%!important}}
+@media(prefers-reduced-motion:reduce){.it.pop,.it.pop::after,.it.mod,.it.gone,.it.shred,.nt{animation:none}}
+</style>
+</head>
+<body>
+<header><b>BLACK ICE &middot; Kali Terminal Simulator</b><small>by xen0byt3 &middot; runs fully in your browser, no install needed</small><a href="index.html" target="_blank" rel="noopener">Open lab guide</a></header>
+<main>
+<section id="desk">
+<div id="dpanel"><button class="pb app" id="appb">&#9776; Applications</button><button class="pb tbw on" data-w="win">Terminal</button><button class="pb tbw on" data-w="fm">File Manager</button><span class="sp"></span><span class="st">kali</span><span class="st" id="clk"></span></div>
+<div id="appm"><button data-a="term">Terminal Emulator</button><button data-a="fm">File Manager</button><button data-a="ws">Wireshark</button><button data-a="rst">Reset lab</button></div>
+<div id="dicons"><div id="dsys"></div><div id="ditems"></div></div>
+<div id="win" class="w">
+<div class="tbar"><span class="dots"><i class="c" title="Close"></i><i class="m" title="Minimize"></i><i class="z" title="Maximize"></i></span><span id="ttl">kali@kali: ~</span></div>
+<div id="tabs"><button id="nt" title="New terminal tab (needed in Phase 7)">+</button></div>
+<div id="screens"></div>
+</div>
+<div id="fm" class="w"><div class="tbar"><span class="dots"><i class="c" title="Close"></i><i class="m" title="Minimize"></i><i class="z" title="Maximize"></i></span><span id="fmt" style="flex:1;text-align:center;color:#c8d3e0;font-size:13px">File Manager</span><button id="fmv">List</button></div>
+<div class="fmbar"><button id="fmup" title="Parent folder">&uarr; Up</button><div id="fmpath"></div><button id="fmf" title="Make the file manager follow the folder your terminal is in"></button></div>
+<div class="fmbody"><ul id="fmside"></ul><div id="fmmain"></div></div><div class="fmstat" id="fmstat"></div></div>
+<div id="notes"></div>
+</section>
+<aside class="side">
+<div class="card"><h3>Commands practised <span id="cnt" style="float:right;color:#3be39a">0/34</span></h3><div class="bar"><i id="pbar"></i></div><div class="chips" id="chips"></div></div>
+<div class="card"><h3>How to use</h3><ul>
+<li>Type like in real Kali. Press <kbd>Tab</kbd> to complete, <kbd>&uarr;</kbd> for history, <kbd>Ctrl+C</kbd> to stop.</li>
+<li><b>sudo password: kali</b></li>
+<li>Phase 7 needs two terminals: click <b>+</b> for a second tab.</li>
+<li>Pasting several lines works (for the report script).</li>
+<li>Watch the Kali Desktop and File Manager: folders and files pop in as you create them, and fade or burn when you <kbd>rm</kbd> or <kbd>shred</kbd>. Double-click items to open them.</li>
+<li>Type <kbd>help</kbd> for the command list.</li></ul></div>
+<div class="card"><h3>Training sandbox</h3><p>Files live in your browser only. Network results (nmap, dig, whois, traceroute and others) are simulated samples, not real scans. Use the real Kali VM when you can.</p>
+<div class="ctl"><button id="fz1">A-</button><button id="fz2">A+</button><label><input type="checkbox" id="fast"> Fast mode</label><label><input type="checkbox" id="anim" checked> Animations</label><button id="rst">Reset lab</button></div></div>
+</aside>
+</main>
+<div id="tv"><div class="wsb"><div class="wsh"><b id="tvt">File</b><button id="tvx">Close</button></div><pre id="tvb"></pre></div></div>
+<div id="ws"><div class="wsb"><div class="wsh"><b id="wst">Wireshark (simulated viewer)</b><button id="wx">Close</button></div><input id="wf" placeholder="Apply a display filter ... (try: tcp.port == 80)" spellcheck="false"><div class="wst"><table><thead><tr><th>No.</th><th>Time</th><th>Source</th><th>Destination</th><th>Protocol</th><th>Length</th><th>Info</th></tr></thead><tbody id="wb"></tbody></table></div></div></div>
+<script>
+'use strict';
+const USER='kali',HOME='/home/kali';
+const NET={ip:'192.168.56.10',gw:'192.168.56.1',mac:'08:00:27:3a:5c:9e',dns:'192.168.56.2'};
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],DAY=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const p2=n=>String(n).padStart(2,'0');
+const lsDate=ms=>{const d=new Date(ms);return MON[d.getMonth()]+' '+String(d.getDate()).padStart(2)+' '+p2(d.getHours())+':'+p2(d.getMinutes())};
+const utcStr=(d=new Date())=>d.getUTCFullYear()+'-'+p2(d.getUTCMonth()+1)+'-'+p2(d.getUTCDate())+' '+p2(d.getUTCHours())+':'+p2(d.getUTCMinutes())+' UTC';
+const gmt=(d=new Date())=>DAY[d.getUTCDay()]+', '+p2(d.getUTCDate())+' '+MON[d.getUTCMonth()]+' '+d.getUTCFullYear()+' '+p2(d.getUTCHours())+':'+p2(d.getUTCMinutes())+':'+p2(d.getUTCSeconds())+' GMT';
+const dateStr=(d=new Date())=>DAY[d.getUTCDay()]+' '+MON[d.getUTCMonth()]+' '+String(d.getUTCDate()).padStart(2)+' '+p2(d.getUTCHours())+':'+p2(d.getUTCMinutes())+':'+p2(d.getUTCSeconds())+' UTC '+d.getUTCFullYear();
+const tsStr=p=>{const d=new Date(p.ts);return p2(d.getUTCHours())+':'+p2(d.getUTCMinutes())+':'+p2(d.getUTCSeconds())+'.'+String(d.getUTCMilliseconds()).padStart(3,'0')+String(p.us).padStart(3,'0')};
+const rnd=n=>Math.floor(Math.random()*n);
+let FAST=false,SUDO=false;
+const used=new Set();
+/* ---------- simulated hosts ---------- */
+const HOSTS={
+'scanme.nmap.org':{ip:'45.33.32.156',v6:'2600:3c01::f03c:91ff:fe18:bb2f',ttl:48,rtt:181,ports:{22:['ssh','OpenSSH 6.6.1p1 Ubuntu 2ubuntu2.13 (Ubuntu Linux; protocol 2.0)'],80:['http','Apache httpd 2.4.7 ((Ubuntu))'],9929:['nping-echo','Nping echo'],31337:['tcpwrapped','']},banner:'SSH-2.0-OpenSSH_6.6.1p1 Ubuntu-2ubuntu2.13',server:'Apache/2.4.7 (Ubuntu)',title:'Go ahead and ScanMe!',mx:[],ns:[]},
+'nmap.org':{ip:'45.33.49.119',ttl:48,rtt:178,ports:{80:['http','Apache httpd 2.4.6'],443:['ssl/http','Apache httpd 2.4.6']},server:'Apache/2.4.6',title:'Nmap: the Network Mapper',mx:['5 mail.nmap.org.'],ns:['ns1.simdns.example.','ns2.simdns.example.','ns3.simdns.example.'],whois:1},
+'example.com':{ip:'93.184.215.14',ttl:56,rtt:120,ports:{80:['http','ECS (nyb/1D2D)'],443:['ssl/http','ECS']},server:'ECS (nyb/1D2D)',title:'Example Domain',mx:[],ns:['a.iana-servers.net.','b.iana-servers.net.'],whois:1},
+'localhost':{ip:'127.0.0.1',ttl:64,rtt:.04,ports:{}}};
+const LAN={'192.168.56.1':'_gateway','192.168.56.100':'','192.168.56.101':''};
+function resolve(n){n=(n||'').toLowerCase();if(HOSTS[n])return Object.assign({name:n},HOSTS[n]);
+ if(/^\d+\.\d+\.\d+\.\d+$/.test(n)){for(const k in HOSTS)if(HOSTS[k].ip===n)return Object.assign({name:n,dn:k},HOSTS[k]);
+  if(n in LAN)return{name:n,ip:n,ttl:64,rtt:.4,ports:{},lan:1};if(n.startsWith('192.168.56.'))return{name:n,ip:n,ttl:64,rtt:0,ports:{},lan:1,dead:1};return{name:n,ip:n,ttl:52,rtt:90,ports:{}}}
+ return null}
+const SCANME_HTML=['<!DOCTYPE html>','<html>','<head>','<title>Go ahead and ScanMe!</title>','<style type="text/css">','  body {font-family: Arial, sans-serif; margin: 2em auto; max-width: 42em}','</style>','</head>','<body>','<h1>Go ahead and ScanMe!</h1>','<p>Welcome to ScanMe, a free test machine provided by the Nmap Project so that people can practise port scanning and check that their tools and connection work.</p>','<p>You may run light scans against this machine. Please be polite: scan only what you need and do not hammer the server.</p>','<p>Nmap is a free network mapper and security scanner used by administrators and testers worldwide.</p>','<p><i>This page is a simulated training copy.</i></p>','</body>','</html>',''].join('\n');
+const EXAMPLE_HTML=['<!doctype html>','<html>','<head>','    <title>Example Domain</title>','</head>','<body>','<div>','    <h1>Example Domain</h1>','    <p>This domain is for use in illustrative examples in documents.</p>','</div>','</body>','</html>',''].join('\n');
+const pageOf=h=>h.name==='scanme.nmap.org'?SCANME_HTML:EXAMPLE_HTML.replace('Example Domain',h.title||'Example Domain');
+/* ---------- virtual filesystem ---------- */
+function newFS(){const old=Date.now()-86400000*90;const d=(o,m)=>({t:'d',o:o||'root',m:m||0o755,ch:{},mt:old});const f=(c,o,m)=>({t:'f',o:o||'root',m:m||0o644,c,mt:old});
+ const root=d();const home=d();root.ch.home=home;const k=d(USER);home.ch.kali=k;k.mt=Date.now()-86400000*3;
+ for(const x of['Desktop','Documents','Downloads','Music','Pictures','Public','Templates','Videos'])k.ch[x]=Object.assign(d(USER),{mt:old+1000});
+ k.ch['.zshrc']=f('# ~/.zshrc: simulated\n',USER);k.ch['.bash_history']=f('',USER,0o600);
+ const etc=d();root.ch.etc=etc;etc.ch['os-release']=f('PRETTY_NAME="Kali GNU/Linux Rolling"\nNAME="Kali GNU/Linux"\nVERSION="2025.3"\nID=kali\nID_LIKE=debian\n');etc.ch.hostname=f('kali\n');etc.ch['resolv.conf']=f('nameserver '+NET.dns+'\n');
+ root.ch.tmp=d('root',0o777);const dev=d();root.ch.dev=dev;dev.ch.null=Object.assign(f('', 'root',0o666),{dev:1});root.ch.usr=d();root.ch.var=d();return root}
+let R=null;
+try{const s=localStorage.getItem('bikali-fs');if(s)R=JSON.parse(s)}catch(e){}
+if(!R||!R.ch)R=newFS();
+function norm(p,cwd){if(!p.startsWith('/'))p=cwd+'/'+p;const o=[];for(const s of p.split('/')){if(!s||s==='.')continue;if(s==='..')o.pop();else o.push(s)}return '/'+o.join('/')}
+function getN(abs){let n=R;for(const s of abs.split('/').filter(Boolean)){if(!n||n.t!=='d')return null;n=n.ch[s]}return n||null}
+function split(abs){const i=abs.lastIndexOf('/');return[abs.slice(0,i)||'/',abs.slice(i+1)]}
+const tilde=p=>p==='~'?HOME:p.startsWith('~/')?HOME+p.slice(1):p;
+const disp=a=>a===HOME?'~':a.startsWith(HOME+'/')?'~'+a.slice(HOME.length):a;
+const modeStr=n=>{let s=n.t==='d'?'d':'-';for(let i=2;i>=0;i--){const b=(n.m>>(i*3))&7;s+=(b&4?'r':'-')+(b&2?'w':'-')+(b&1?'x':'-')}return s};
+const fsize=n=>n.t==='d'?4096:n.pcap?24+n.pcap.reduce((a,p)=>a+70+(p.len||0),0):new TextEncoder().encode(n.c).length;
+const canR=(n,c)=>c.sudo||(n.o===USER?n.m&0o400:n.m&0o004);
+const canX=(n,c)=>c.sudo?(n.m&0o111):(n.o===USER?n.m&0o100:n.m&0o001);
+const dirW=(p,c)=>c.sudo||(p.o===USER&&(p.m&0o200));
+function put(abs,content,o){if(abs==='/dev/null')return null;const n=getN(abs);
+ if(n){if(n.t==='d')return'Is a directory';if(!o.sudo&&!(n.o===USER&&(n.m&0o200)))return'Permission denied';n.c=o.append?n.c+content:content;if(!o.append)delete n.pcap;n.mt=Date.now();return null}
+ const[pa,nm]=split(abs),p=getN(pa);if(!p||p.t!=='d')return'No such file or directory';if(!dirW(p,o))return'Permission denied';
+ p.ch[nm]={t:'f',o:o.owner||USER,m:o.mode||0o644,c:content,mt:Date.now()};p.mt=Date.now();return null}
+function readF(p,c,nm){const abs=norm(tilde(p),c.tab.cwd),n=getN(abs);if(!n)return{e:nm+': '+p+': No such file or directory\n'};if(n.t==='d')return{e:nm+': '+p+': Is a directory\n'};if(!canR(n,c))return{e:nm+': '+p+': Permission denied\n'};return{n,t:n.pcap?'\ufffd\ufffd\ufffd\ufffd\u0002\u0000\u0004\u0000\ufffd[binary pcap data]\n':n.c}}
+const R0=(o,c)=>({out:o||'',err:'',code:c||0}),ER=(e,c)=>({out:'',err:e,code:c==null?1:c});
+const textLines=s=>{const l=s.split('\n');if(l[l.length-1]==='')l.pop();return l};
+const stamp=n=>{n.mt=Date.now();if(n.ch)for(const k in n.ch)stamp(n.ch[k])};
+/* ---------- packets and captures ---------- */
+const CAPS=[];
+function pktName(a,nn){if(nn)return a;if(a===NET.ip)return'kali';for(const k in HOSTS)if(HOSTS[k].ip===a)return k;return a}
+function pktPort(p,nn){return nn?p:({80:'http',22:'ssh',53:'domain',443:'https'}[p]||p)}
+function pktLine(p,nn){if(p.proto==='icmp')return tsStr(p)+' IP '+pktName(p.src,nn)+' > '+pktName(p.dst,nn)+': '+p.txt;return tsStr(p)+' IP '+pktName(p.src,nn)+'.'+pktPort(p.sp,nn)+' > '+pktName(p.dst,nn)+'.'+pktPort(p.dp,nn)+': '+p.txt}
+function tcpSession(h,port,req,resp,reqApp,respApp,banner){const c=NET.ip,s=h.ip,sp=40000+rnd(20000),cs=rnd(2e9)+1e9,ss=rnd(2e9)+1e9,tv=rnd(9e6)+1e6;let t=Date.now();const out=[];
+ const P=(from,fl,txt,len,app)=>{t+=15+rnd(60);const cl=from===c;out.push({ts:t,us:rnd(1000),proto:'tcp',src:cl?c:s,sp:cl?sp:port,dst:cl?s:c,dp:cl?port:sp,fl,len,txt:'Flags ['+fl+'], '+txt,app})};
+ P(c,'S','seq '+cs+', win 64240, options [mss 1460,sackOK,TS val '+tv+' ecr 0,nop,wscale 7], length 0',0);
+ P(s,'S.','seq '+ss+', ack '+(cs+1)+', win 65160, options [mss 1460,sackOK,TS val '+(tv+9)+' ecr '+tv+',nop,wscale 7], length 0',0);
+ P(c,'.','ack 1, win 502, length 0',0);
+ if(banner){P(s,'P.','seq 1:'+(1+banner)+', ack 1, win 509, length '+banner,banner,'SSH banner');P(c,'.','ack '+(1+banner)+', win 502, length 0',0);P(c,'F.','seq 1, ack '+(1+banner)+', win 502, length 0',0);P(s,'F.','seq '+(1+banner)+', ack 2, win 509, length 0',0);P(c,'.','ack '+(2+banner)+', win 502, length 0',0);return out}
+ P(c,'P.','seq 1:'+(1+req)+', ack 1, win 502, length '+req,req,reqApp);P(s,'.','ack '+(1+req)+', win 509, length 0',0);
+ P(s,'P.','seq 1:'+(1+resp)+', ack '+(1+req)+', win 509, length '+resp,resp,respApp);P(c,'.','ack '+(1+resp)+', win 502, length 0',0);
+ P(c,'F.','seq '+(1+req)+', ack '+(1+resp)+', win 502, length 0',0);P(s,'F.','seq '+(1+resp)+', ack '+(2+req)+', win 509, length 0',0);P(c,'.','ack '+(2+resp)+', win 502, length 0',0);return out}
+function emit(pkts){for(const cap of CAPS.slice())for(const p of pkts){if(cap.done||(cap.count&&cap.pkts.length>=cap.count))break;if(cap.host&&p.src!==cap.host&&p.dst!==cap.host)continue;if(cap.port&&p.sp!==cap.port&&p.dp!==cap.port)continue;if(cap.proto&&p.proto!==cap.proto)continue;
+ cap.pkts.push(p);if(cap.live)cap.tab.out(pktLine(p,cap.nn)+'\n');if(cap.count&&cap.pkts.length>=cap.count){setTimeout(()=>cap.finish(),30);break}}}
+/* ---------- parsing and expansion ---------- */
+function matchParen(s,i){let d=0;for(let j=i;j<s.length;j++){const c=s[j];if(c==="'"){j=s.indexOf("'",j+1);if(j<0)break}else if(c==='"'){j++;while(j<s.length&&s[j]!=='"'){if(s[j]==='\\')j++;j++}}else if(c==='\\')j++;else if(c==='(')d++;else if(c===')'){d--;if(!d)return j}}throw new Error('parse error: unmatched )')}
+const OPS=['2>&1','2>>','&>','>>','<<','&&','||','2>','>','<','|',';','&'];
+function tokenize(s){const toks=[];let i=0,cur=null;const push=()=>{if(cur){toks.push(cur);cur=null}};const add=sg=>{(cur=cur||{w:[]}).w.push(sg)};
+ while(i<s.length){const c=s[i];
+  if(c===' '||c==='\t'){push();i++;continue}
+  if(c==='#'&&!cur)break;
+  if(c==="'"){const j=s.indexOf("'",i+1);if(j<0)throw new Error("parse error: unmatched '");add({q:'s',v:s.slice(i+1,j)});i=j+1;continue}
+  if(c==='"'){let j=i+1,buf='';while(j<s.length&&s[j]!=='"'){if(s[j]==='\\'&&j+1<s.length&&'"\\$`'.includes(s[j+1])){buf+=s[j+1]==='$'?'\u0001':s[j+1];j+=2;continue}
+    if(s[j]==='$'&&s[j+1]==='('){const e=matchParen(s,j+1);buf+=s.slice(j,e+1);j=e+1;continue}buf+=s[j++]}
+   if(j>=s.length)throw new Error('parse error: unmatched "');add({q:'d',v:buf});i=j+1;continue}
+  if(c==='\\'&&i+1<s.length){add({q:'s',v:s[i+1]});i+=2;continue}
+  if(c==='$'&&s[i+1]==='('){const e=matchParen(s,i+1);add({q:'c',v:s.slice(i,e+1)});i=e+1;continue}
+  let m=null;for(const o of OPS){if(s.startsWith(o,i)){if(cur&&(o==='2>'||o==='2>>'||o==='2>&1'))continue;m=o;break}}
+  if(m){push();toks.push({op:m});i+=m.length;continue}
+  if(cur&&cur.w.length&&cur.w[cur.w.length-1].q==='u')cur.w[cur.w.length-1].v+=c;else add({q:'u',v:c});i++}
+ push();return toks}
+function parse(line){const toks=tokenize(line),items=[];let op='',pl=[],cmd={words:[],redirs:[]};
+ const endCmd=()=>{if(cmd.words.length||cmd.redirs.length)pl.push(cmd);cmd={words:[],redirs:[]}};
+ for(let i=0;i<toks.length;i++){const t=toks[i];
+  if(t.op){if(t.op==='2>&1'){cmd.redirs.push({t:'2>&1'});continue}
+   if(['>','>>','<','<<','2>','2>>','&>'].includes(t.op)){const n=toks[++i];if(!n||n.op)throw new Error('parse error near `'+(n?n.op:'\\n')+"'");cmd.redirs.push({t:t.op,tok:n});continue}
+   if(t.op==='|'){endCmd();continue}
+   endCmd();if(pl.length)items.push({op,pl});pl=[];op=t.op==='&'?';':t.op;continue}
+  cmd.words.push(t)}
+ endCmd();if(pl.length)items.push({op,pl});return items}
+function findHd(line){let toks;try{toks=tokenize(line)}catch(e){return null}const i=toks.findIndex(t=>t.op==='<<');if(i<0||!toks[i+1]||toks[i+1].op)return null;const w=toks[i+1].w;return{delim:w.map(s=>s.v).join(''),quoted:w.some(s=>s.q!=='u')}}
+const ENVV=t=>({HOME,USER,LOGNAME:USER,SHELL:'/usr/bin/zsh',HOSTNAME:'kali',PWD:t.cwd,LANG:'en_US.UTF-8'});
+const varVal=(t,n)=>n==='?'?String(t.status):(n in t.vars?t.vars[n]:(ENVV(t)[n]||''));
+function dq(v,t){let o='';for(let i=0;i<v.length;i++){const c=v[i];
+ if(c==='$'&&v[i+1]==='('){const e=matchParen(v,i+1);o+=cmdsub(v.slice(i,e+1),t);i=e;continue}
+ if(c==='$'){const m=/^\$(\?|\{(\w+)\}|(\w+))/.exec(v.slice(i));if(m){o+=varVal(t,m[1]==='?'?'?':(m[2]||m[3]));i+=m[0].length-1;continue}}
+ o+=c}return o.replace(/\u0001/g,'$')}
+function cmdsub(s,t){let cap='';const sh=Object.assign({},t,{vars:Object.assign({},t.vars),out:x=>{cap+=x},eout:x=>eprint(t,x),proc:null});runLine(s.slice(2,-1),sh,{sync:true},()=>{});return cap.replace(/\n+$/,'')}
+function expandWord(tk,t,split){const fields=[];let cur='',has=false,glob=false;const end=()=>{if(has)fields.push({s:cur,g:glob});cur='';has=false;glob=false};
+ tk.w.forEach((sg,si)=>{
+  if(sg.q==='s'){cur+=sg.v;has=true}
+  else if(sg.q==='d'){cur+=dq(sg.v,t);has=true}
+  else if(sg.q==='c'){const o=cmdsub(sg.v,t);if(split){o.split(/\s+/).filter(Boolean).forEach((p,k)=>{if(k)end();cur+=p;has=true})}else{cur+=o;has=true}}
+  else{let v=sg.v;if(si===0&&v[0]==='~'&&(v.length===1||v[1]==='/'))v=HOME+v.slice(1);v=v.replace(/\$(\?|\{(\w+)\}|(\w+))/g,(m,a,b,c2)=>varVal(t,a==='?'?'?':(b||c2)));if(/[*?\[]/.test(sg.v))glob=true;cur+=v;has=true}});
+ end();if(!split)return[fields.map(f=>f.s).join('')];
+ const res=[];for(const f of fields){if(f.g){const m=globX(f.s,t);if(!m.length)throw new Error('no matches found: '+f.s);res.push(...m)}else res.push(f.s)}return res}
+function globX(pat,t){const abs=pat.startsWith('/');const segs=pat.split('/').filter(Boolean);let cur=[{d:abs?'/':'',a:abs?'/':t.cwd}];
+ for(const sg of segs){const nx=[];for(const c of cur){
+  if(!/[*?\[]/.test(sg)){const a=norm(sg,c.a);if(getN(a))nx.push({d:c.d===''?sg:(c.d.endsWith('/')?c.d+sg:c.d+'/'+sg),a});continue}
+  const n=getN(c.a);if(!n||n.t!=='d')continue;const re=new RegExp('^'+sg.replace(/[.+^${}()|\\]/g,'\\$&').replace(/\*/g,'[^/]*').replace(/\?/g,'[^/]')+'$');
+  Object.keys(n.ch).sort().forEach(k=>{if(re.test(k)&&(sg[0]==='.'||k[0]!=='.'))nx.push({d:c.d===''?k:(c.d.endsWith('/')?c.d+k:c.d+'/'+k),a:norm(k,c.a)})})}cur=nx}
+ return cur.map(c=>c.d)}
+/* ---------- executor ---------- */
+const eprint=(t,x)=>(t.eout||t.out)(x);
+function runLine(line,t,opt,done){let items;try{items=parse(line)}catch(e){eprint(t,'zsh: '+e.message+'\n');t.status=1;return done(1)}
+ let k=0;const step=()=>{if(k>=items.length)return done(t.status);const it=items[k++];
+  if((it.op==='&&'&&t.status!==0)||(it.op==='||'&&t.status===0))return step();
+  runPipe(it.pl,t,opt,code=>{t.status=code;step()})};step()}
+function isAssign(tk){const s=tk.w[0];return s&&s.q==='u'&&/^[A-Za-z_]\w*=/.test(s.v)}
+function runPipe(pl,t,opt,cb){let stdin=null,i=0,last=0;
+ const stage=()=>{if(i>=pl.length)return cb(last);const c=pl[i],isLast=i===pl.length-1;i++;
+  let argv=[];try{
+   let ws=c.words.slice();while(ws.length&&isAssign(ws[0])){const w=ws.shift(),m=/^([A-Za-z_]\w*)=/.exec(w.w[0].v);const w2={w:[Object.assign({},w.w[0],{v:w.w[0].v.slice(m[0].length)}),...w.w.slice(1)]};t.vars[m[1]]=expandWord(w2,t,false)[0]}
+   for(const w of ws)argv.push(...expandWord(w,t,true))}catch(e){eprint(t,'zsh: '+e.message+'\n');return cb(1)}
+  let outR=null,errR=null,inText=stdin,errOut=false;
+  try{for(const r of c.redirs){if(r.t==='2>&1'){errOut=true;continue}const tg=expandWord(r.tok,t,false)[0];
+   if(r.t==='<<'){inText=opt.here==null?'':opt.here;continue}
+   if(r.t==='<'){const n=getN(norm(tilde(tg),t.cwd));if(!n||n.t!=='f'){eprint(t,'zsh: no such file or directory: '+tg+'\n');return cb(1)}inText=n.c;continue}
+   if(r.t==='>'||r.t==='>>')outR={f:tg,app:r.t==='>>'};else if(r.t==='2>'||r.t==='2>>')errR={f:tg,app:r.t==='2>>'};else if(r.t==='&>'){outR={f:tg,app:false};errR={f:tg,app:true}}}}catch(e){eprint(t,'zsh: '+e.message+'\n');return cb(1)}
+  if(!argv.length){last=0;stdin=null;return stage()}
+  const wr=(R2,text)=>{const e=put(norm(tilde(R2.f),t.cwd),text,{append:R2.app,sudo:false});if(e){eprint(t,'zsh: '+e.toLowerCase()+': '+R2.f+'\n');return false}return true};
+  const ctx={stdin:inText,sudo:false,tab:t,tty:isLast&&!outR&&!opt.cap,here:opt.here};
+  const res=runCmd(argv,ctx);
+  if(res.proc){if(pl.length>1||opt.sync){eprint(t,'zsh: this command cannot be used in a pipe or script in the simulator\n');return cb(1)}
+   t.proc=res.proc;res.proc.start(code=>{t.proc=null;last=code;stdin=null;stage()});return}
+  let o=res.out,e=res.err;if(errOut){o+=e;e=''}
+  if(e){if(errR){if(errR.f!=='/dev/null')wr(errR,e)}else eprint(t,e)}
+  if(res.clear&&t.clear)t.clear();
+  last=res.code;
+  if(outR){if(outR.f!=='/dev/null')if(!wr(outR,o))last=1;stdin=null;return stage()}
+  if(isLast){if(o){if(res.slow&&!FAST&&!opt.sync&&pl.length===1&&!opt.cap){const ch=o.match(/[^\n]*\n|[^\n]+$/g)||[];let k=0,tm=null,fin=false;const finish=cd=>{if(fin)return;fin=true;t.proc=null;last=cd;stage()};
+    t.proc={kill(){clearTimeout(tm);finish(130)}};const nx=()=>{if(k>=ch.length)return finish(res.code);t.out(ch[k++]);tm=setTimeout(nx,res.slow)};nx();return}
+   t.out(o)}stdin=null}else stdin=o;
+  stage()};stage()}
+function runCmd(argv,ctx){const name=argv[0],args=argv.slice(1);
+ if(name==='sudo'){let a=args;while(a[0]&&a[0].startsWith('-')){if(a[0]==='-v'&&a.length===1)return R0('');a=a.slice(1)}if(!a.length)return ER('usage: sudo -h | -K | -k | -V\n');ctx.sudo=true;return runCmd(a,ctx)}
+ if(name.includes('/'))return runPath(name,args,ctx);
+ const f=CMDS[name];if(!f)return ER('zsh: command not found: '+name+'\n',127);
+ const r=f(args,ctx);if(r.code===0&&!r.proc)mark(name,args,ctx);return r}
+function mark(name,args,ctx){const a=args;const base=['pwd','ls','cd','mkdir','cat','head','tail','touch','cp','mv','rm','chmod','grep','sed','shred','ping','traceroute','nslookup','dig','nmap','arp-scan','tcpdump','curl','wget','nc','whois'];
+ if(base.includes(name))used.add(name);if(ctx.sudo)used.add('sudo');if(name==='ss'||name==='netstat')used.add('ss / netstat');
+ if(name==='ip'&&/^(a|addr|address)$/.test(a[0]))used.add('ip a');if(name==='ip'&&/^(r|route)$/.test(a[0]))used.add('ip route');
+ if(name==='hostname'&&a.includes('-I'))used.add('hostname -I');if(name==='nmap'&&a.includes('-sV'))used.add('nmap -sV');if(name==='nmap'&&a.includes('-A'))used.add('nmap -A');
+ if(name==='base64'&&(a.includes('--decode')||a.includes('-d')))used.add('base64 --decode')}
+function runPath(p,args,ctx){const n=getN(norm(tilde(p),ctx.tab.cwd));if(!n)return ER('zsh: no such file or directory: '+p+'\n',127);if(n.t==='d'||!canX(n,ctx))return ER('zsh: permission denied: '+p+'\n',126);return runScript(n.c,ctx)}
+function runScript(text,ctx){const t=ctx.tab,sh=Object.assign({},t,{vars:Object.assign({},t.vars),proc:null});let code=0;
+ for(const ln of text.split('\n'))runLine(ln,sh,{sync:true},c=>{code=c});return R0('',code)}
+/* ---------- commands ---------- */
+const CMDS={};
+CMDS.pwd=(a,c)=>R0(c.tab.cwd+'\n');
+CMDS.cd=(a,c)=>{const t=c.tab;let p=a[0];if(p===undefined||p==='~')p=HOME;else if(p==='-')p=t.prev;const abs=norm(tilde(p),t.cwd),n=getN(abs);
+ if(!n)return ER('cd: no such file or directory: '+a[0]+'\n');if(n.t!=='d')return ER('cd: not a directory: '+a[0]+'\n');t.prev=t.cwd;t.cwd=abs;return R0(a[0]==='-'?abs+'\n':'')};
+const colorName=(nm,n,tty)=>{if(!tty)return nm;if(n.t==='d')return'\x1b[1;34m'+nm+'\x1b[0m';if(n.m&0o111)return'\x1b[1;32m'+nm+'\x1b[0m';return nm};
+const sortNames=a=>a.sort((x,y)=>{const kx=x.replace(/^\./,'').toLowerCase(),ky=y.replace(/^\./,'').toLowerCase();return kx<ky?-1:kx>ky?1:x<y?-1:1});
+CMDS.ls=(a,c)=>{const fl={},ps=[];for(const x of a){if(/^-[a-zA-Z]+$/.test(x))for(const ch of x.slice(1))fl[ch]=1;else if(!x.startsWith('--'))ps.push(x)}if(!ps.length)ps.push('.');
+ let out='',err='',code=0;const dirs=[],files=[];
+ for(const p of ps){const abs=norm(tilde(p),c.tab.cwd),n=getN(abs);if(!n){err+="ls: cannot access '"+p+"': No such file or directory\n";code=2;continue}(n.t==='d'&&!fl.d?dirs:files).push({p,n})}
+ const fmt=(ents,isDir)=>{if(fl.l){const rows=ents.map(e=>[modeStr(e.n),e.n.t==='d'?2+Object.values(e.n.ch).filter(x=>x.t==='d').length:1,e.n.o,e.n.o,fsize(e.n),lsDate(e.n.mt),colorName(e.nm,e.n,c.tty)]);const w=Math.max(0,...rows.map(r=>String(r[4]).length));
+   const tot=ents.reduce((s,e)=>{const z=fsize(e.n);return s+(e.n.t==='d'?4:(z?Math.ceil(z/4096)*4:0))},0);return(isDir?'total '+tot+'\n':'')+rows.map(r=>r[0]+' '+r[1]+' '+r[2]+' '+r[3]+' '+String(r[4]).padStart(w)+' '+r[5]+' '+r[6]).join('\n')+(rows.length?'\n':'')}
+  const nm=ents.map(e=>colorName(e.nm,e.n,c.tty));if(!nm.length)return'';return c.tty?nm.join('  ')+'\n':nm.join('\n')+'\n'};
+ const lst=d=>{let names=Object.keys(d.ch);if(!fl.a&&!fl.A)names=names.filter(x=>!x.startsWith('.'));const ents=sortNames(names).map(nm=>({nm,n:d.ch[nm]}));if(fl.a)ents.unshift({nm:'.',n:d},{nm:'..',n:d});return fmt(ents,true)};
+ const multi=ps.length>1||fl.R;let first=true;
+ if(files.length){out+=fmt(files.map(f=>({nm:f.p,n:f.n})),false);first=false}
+ const walk=(d,dp)=>{if(!first)out+='\n';first=false;if(multi)out+=dp+':\n';out+=lst(d);if(fl.R)for(const k of sortNames(Object.keys(d.ch).filter(x=>d.ch[x].t==='d'&&(fl.a||!x.startsWith('.')))))walk(d.ch[k],dp+'/'+k)};
+ for(const d of dirs)walk(d.n,d.p);return{out,err,code}};
+CMDS.mkdir=(a,c)=>{const fl={},p=[];a.forEach(x=>{if(/^-[a-zA-Z]+$/.test(x))for(const ch of x.slice(1))fl[ch]=1;else p.push(x)});if(!p.length)return ER("mkdir: missing operand\nTry 'mkdir --help' for more information.\n");let err='',code=0,out='';
+ for(const x of p){const abs=norm(tilde(x),c.tab.cwd);if(getN(abs)){if(!fl.p){err+="mkdir: cannot create directory '"+x+"': File exists\n";code=1}continue}
+  const parts=abs.split('/').filter(Boolean);let cur=R,path='';for(let i=0;i<parts.length;i++){path+='/'+parts[i];const nx=cur.ch[parts[i]];
+   if(nx){cur=nx;continue}if(i<parts.length-1&&!fl.p){err+="mkdir: cannot create directory '"+x+"': No such file or directory\n";code=1;break}
+   if(!dirW(cur,c)){err+="mkdir: cannot create directory '"+x+"': Permission denied\n";code=1;break}
+   cur=cur.ch[parts[i]]={t:'d',o:c.sudo?'root':USER,m:0o755,ch:{},mt:Date.now()};if(fl.v)out+="mkdir: created directory '"+x+"'\n"}}
+ return{out,err,code}};
+CMDS.touch=(a,c)=>{const p=a.filter(x=>!x.startsWith('-'));if(!p.length)return ER("touch: missing file operand\nTry 'touch --help' for more information.\n");let err='',code=0;
+ for(const x of p){const abs=norm(tilde(x),c.tab.cwd),n=getN(abs);if(n){n.mt=Date.now();continue}const e=put(abs,'',{sudo:c.sudo,owner:c.sudo?'root':USER});if(e){err+="touch: cannot touch '"+x+"': "+e+'\n';code=1}}return{out:'',err,code}};
+CMDS.cat=(a,c)=>{const fl={},p=[];a.forEach(x=>{if(/^-[a-zA-Z]+$/.test(x))for(const ch of x.slice(1))fl[ch]=1;else p.push(x)});let out='',err='',code=0;
+ if(!p.length){if(c.stdin==null)return ER('cat: waiting for keyboard input is not supported here. Use a file, a pipe, or a heredoc.\n');out=c.stdin}
+ for(const x of p){if(x==='-'){out+=c.stdin||'';continue}const r=readF(x,c,'cat');if(r.e){err+=r.e;code=1}else out+=r.t}
+ if(fl.n)out=textLines(out).map((l,i)=>String(i+1).padStart(6)+'\t'+l).join('\n')+'\n';return{out,err,code}};
+function nOpt(a){let n=10;const f=[];for(let i=0;i<a.length;i++){const x=a[i];if(x==='-n')n=parseInt(a[++i],10);else if(/^-n\d+$/.test(x))n=parseInt(x.slice(2),10);else if(/^-\d+$/.test(x))n=parseInt(x.slice(1),10);else if(x.startsWith('-')&&x!=='-')continue;else f.push(x)}return{n,f}}
+function headTail(nm,a,c,fn){const o=nOpt(a);let out='',err='',code=0;const srcs=[];
+ if(!o.f.length){if(c.stdin==null)return ER(nm+': reading from the keyboard is not supported here\n');srcs.push([null,c.stdin])}
+ for(const x of o.f){const r=readF(x,c,nm);if(r.e){err+=r.e;code=1}else srcs.push([x,r.t])}
+ srcs.forEach(([f,t],i)=>{if(f&&o.f.length>1)out+=(i?'\n':'')+'==> '+f+' <==\n';const l=fn(textLines(t),o.n);out+=l.length?l.join('\n')+'\n':''});return{out,err,code}}
+CMDS.head=(a,c)=>headTail('head',a,c,(l,n)=>l.slice(0,n));
+CMDS.tail=(a,c)=>headTail('tail',a,c,(l,n)=>n?l.slice(-n):[]);
+CMDS.wc=(a,c)=>{const fl={};const f=[];a.forEach(x=>{if(/^-[a-zA-Z]+$/.test(x))for(const ch of x.slice(1))fl[ch]=1;else f.push(x)});const t=f.length?readF(f[0],c,'wc'):{t:c.stdin||''};if(t.e)return ER(t.e);const s=t.t,l=(s.match(/\n/g)||[]).length,w=s.split(/\s+/).filter(Boolean).length,b=new TextEncoder().encode(s).length;
+ return R0((fl.l?l:fl.w?w:fl.c?b:l+' '+w+' '+b)+(f.length?' '+f[0]:'')+'\n')};
+CMDS.sort=(a,c)=>{const fl={};const f=[];a.forEach(x=>{if(/^-[a-zA-Z]+$/.test(x))for(const ch of x.slice(1))fl[ch]=1;else f.push(x)});const t=f.length?readF(f[0],c,'sort'):{t:c.stdin||''};if(t.e)return ER(t.e);let l=textLines(t.t);l.sort(fl.n?(x,y)=>parseFloat(x)-parseFloat(y):(x,y)=>x<y?-1:x>y?1:0);if(fl.r)l.reverse();if(fl.u)l=l.filter((x,i)=>!i||x!==l[i-1]);return R0(l.length?l.join('\n')+'\n':'')};
+CMDS.uniq=(a,c)=>{const cn=a.includes('-c');const t=a.filter(x=>!x.startsWith('-'));const r=t.length?readF(t[0],c,'uniq'):{t:c.stdin||''};if(r.e)return ER(r.e);const o=[];textLines(r.t).forEach(l=>{if(o.length&&o[o.length-1][0]===l)o[o.length-1][1]++;else o.push([l,1])});return R0(o.map(x=>cn?String(x[1]).padStart(7)+' '+x[0]:x[0]).join('\n')+(o.length?'\n':''))};
+CMDS.echo=(a)=>{let n=false,e=true,i=0;for(;i<a.length&&/^-[neE]+$/.test(a[i]);i++)for(const ch of a[i].slice(1)){if(ch==='n')n=true;if(ch==='E')e=false;if(ch==='e')e=true}
+ let s=a.slice(i).join(' ');if(e)s=s.replace(/\\(\\|n|t|r|a|e|0)/g,(m,x)=>({'\\':'\\',n:'\n',t:'\t',r:'\r',a:'\x07',e:'\x1b','0':'\0'}[x]));return R0(s+(n?'':'\n'))};
+function cpMv(nm,a,c){const fl={},p=[];a.forEach(x=>{if(/^-[a-zA-Z]+$/.test(x))for(const ch of x.slice(1))fl[ch]=1;else p.push(x)});
+ if(p.length<2)return ER(p.length?nm+": missing destination file operand after '"+p[0]+"'\n":nm+': missing file operand\n');
+ const dest=p.pop(),dabs=norm(tilde(dest),c.tab.cwd),dn=getN(dabs);let err='',code=0;if(p.length>1&&!(dn&&dn.t==='d'))return ER(nm+": target '"+dest+"' is not a directory\n");
+ for(const s of p){const sabs=norm(tilde(s),c.tab.cwd),sn=getN(sabs);if(!sn){err+=nm+": cannot stat '"+s+"': No such file or directory\n";code=1;continue}
+  if(nm==='cp'&&sn.t==='d'&&!(fl.r||fl.R||fl.a)){err+="cp: -r not specified; omitting directory '"+s+"'\n";code=1;continue}
+  if(nm==='cp'&&sn.t==='f'&&!canR(sn,c)){err+="cp: cannot open '"+s+"' for reading: Permission denied\n";code=1;continue}
+  const tabs=norm((dn&&dn.t==='d'?dabs+'/'+split(sabs)[1]:dabs),'/'),[pa,nmv]=split(tabs),pn=getN(pa);
+  if(!pn||pn.t!=='d'){err+=nm+": cannot "+(nm==='cp'?'create regular file':'move')+" '"+dest+"': No such file or directory\n";code=1;continue}
+  const ex=getN(tabs);if(!dirW(pn,c)||(ex&&ex.t==='f'&&!c.sudo&&ex.o!==USER)){err+=nm+": cannot "+(nm==='cp'?'create regular file':'move to')+" '"+dest+"': Permission denied\n";code=1;continue}
+  if(nm==='cp'){const cl=JSON.parse(JSON.stringify(sn));cl.o=c.sudo?'root':USER;stamp(cl);pn.ch[nmv]=cl;pn.mt=Date.now()}
+  else{const[sp,sname]=split(sabs),spn=getN(sp);if(!dirW(spn,c)){err+="mv: cannot move '"+s+"' to '"+dest+"': Permission denied\n";code=1;continue}delete spn.ch[sname];pn.ch[nmv]=sn;sn.mt=Date.now();pn.mt=Date.now()}}
+ return{out:'',err,code}}
+CMDS.cp=(a,c)=>cpMv('cp',a,c);CMDS.mv=(a,c)=>cpMv('mv',a,c);
+CMDS.rm=(a,c)=>{const fl={},p=[];a.forEach(x=>{if(/^-[a-zA-Z]+$/.test(x))for(const ch of x.slice(1))fl[ch]=1;else p.push(x)});if(!p.length&&!fl.f)return ER("rm: missing operand\nTry 'rm --help' for more information.\n");let err='',code=0,out='';
+ for(const x of p){const abs=norm(tilde(x),c.tab.cwd),n=getN(abs);if(!n){if(!fl.f){err+="rm: cannot remove '"+x+"': No such file or directory\n";code=1}continue}
+  if(abs==='/'){err+="rm: it is dangerous to operate recursively on '/'\n";code=1;continue}
+  if(n.t==='d'&&!(fl.r||fl.R)){err+="rm: cannot remove '"+x+"': Is a directory\n";code=1;continue}
+  const[pa,nm]=split(abs),pn=getN(pa);if(!dirW(pn,c)){err+="rm: cannot remove '"+x+"': Permission denied\n";code=1;continue}delete pn.ch[nm];pn.mt=Date.now();if(fl.v)out+="removed '"+x+"'\n"}return{out,err,code}};
+function chmodSpec(s,cur){if(/^[0-7]{3,4}$/.test(s))return parseInt(s,8)&0o777;let m=cur;
+ for(const part of s.split(',')){const r=/^([ugoa]*)([-+=])([rwxX]*)$/.exec(part);if(!r)return null;const who=r[1]==='a'||!r[1]?'ugo':r[1];let bits=0;for(const ch of r[3])bits|=ch==='r'?4:ch==='w'?2:1;
+  let mask=0,wm=0;for(const w of who){const sh=w==='u'?6:w==='g'?3:0;mask|=bits<<sh;wm|=7<<sh}if(r[2]==='+')m|=mask;else if(r[2]==='-')m&=~mask;else m=(m&~wm)|mask}return m&0o777}
+CMDS.chmod=(a,c)=>{if(a.length<2)return ER(a.length?"chmod: missing operand after '"+a[0]+"'\nTry 'chmod --help' for more information.\n":"chmod: missing operand\nTry 'chmod --help' for more information.\n");let err='',code=0;const[sp,...fs]=a;
+ for(const p of fs){const n=getN(norm(tilde(p),c.tab.cwd));if(!n){err+="chmod: cannot access '"+p+"': No such file or directory\n";code=1;continue}
+  if(!c.sudo&&n.o!==USER){err+="chmod: changing permissions of '"+p+"': Operation not permitted\n";code=1;continue}const m=chmodSpec(sp,n.m);if(m==null)return ER("chmod: invalid mode: '"+sp+"'\nTry 'chmod --help' for more information.\n");n.m=m}return{out:'',err,code}};
+CMDS.shred=(a,c)=>{let v=false,u=false,n=3,z=false;const files=[];for(let i=0;i<a.length;i++){const x=a[i];if(x==='-n')n=+a[++i];else if(/^-n\d+$/.test(x))n=+x.slice(2);else if(x.startsWith('--iterations='))n=+x.split('=')[1];else if(x==='--remove')u=true;else if(x==='--verbose')v=true;else if(/^-[a-zA-Z]+$/.test(x)){for(const ch of x.slice(1)){if(ch==='v')v=true;if(ch==='u')u=true;if(ch==='z')z=true}}else files.push(x)}
+ if(!files.length)return ER("shred: missing file operand\nTry 'shred --help' for more information.\n");let out='',err='',code=0;
+ for(const x of files){const abs=norm(tilde(x),c.tab.cwd),nd=getN(abs);
+  if(!nd){err+='shred: '+x+': failed to open for writing: No such file or directory\n';code=1;continue}if(nd.t==='d'){err+='shred: '+x+': failed to open for writing: Is a directory\n';code=1;continue}
+  if(!c.sudo&&!(nd.o===USER&&(nd.m&0o200))){err+='shred: '+x+': failed to open for writing: Permission denied\n';code=1;continue}
+  if(v){for(let i=1;i<=n;i++)out+='shred: '+x+': pass '+i+'/'+(n+(z?1:0))+' (random)...\n';if(z)out+='shred: '+x+': pass '+(n+1)+'/'+(n+1)+' (000000)...\n'}
+  if(u){const base=split(abs)[1],dp=x.slice(0,x.length-base.length);if(v){out+='shred: '+x+': removing\n';let prev=x;for(let l=base.length;l>=1;l--){const cur=dp+'0'.repeat(l);out+='shred: '+prev+': renamed to '+cur+'\n';prev=cur}out+='shred: '+x+': removed\n'}const[pa,nm]=split(abs),pn=getN(pa);delete pn.ch[nm];pn.mt=Date.now()}
+  else{nd.c=z?'\0'.repeat(8):'\ufffd'.repeat(8);delete nd.pcap;nd.mt=Date.now()}}return{out,err,code}};
+/* grep and sed */
+function toJs(p,ere){let o='',i=0;while(i<p.length){const ch=p[i];
+ if(ch==='['){let j=i+1;if(p[j]==='^')j++;if(p[j]===']')j++;while(j<p.length&&p[j]!==']'){if(p[j]==='['&&p[j+1]===':'){const e=p.indexOf(':]',j);j=e>0?e+2:j+1;continue}j++}
+  o+=p.slice(i,j+1).replace(/\\/g,'\\\\').replace(/\[:digit:\]/g,'0-9').replace(/\[:alpha:\]/g,'a-zA-Z').replace(/\[:alnum:\]/g,'a-zA-Z0-9').replace(/\[:space:\]/g,'\\s').replace(/\[:upper:\]/g,'A-Z').replace(/\[:lower:\]/g,'a-z');i=j+1;continue}
+ if(ch==='\\'&&i+1<p.length){const n=p[i+1];if(!ere&&'(){}|+?'.includes(n)){o+=n;i+=2;continue}if(/\d/.test(n)){o+='\\'+n;i+=2;continue}if(n==='<'||n==='>'){o+='\\b';i+=2;continue}o+='\\'+n;i+=2;continue}
+ if(!ere&&'(){}|+?'.includes(ch)){o+='\\'+ch;i++;continue}o+=ch;i++}return o}
+CMDS.grep=(a,c)=>{const f={},pos=[],pats=[];for(let i=0;i<a.length;i++){const x=a[i];if(x==='-e'){pats.push(a[++i]);continue}if(x.startsWith('--')){if(x==='--color'||x.startsWith('--color')||x==='--colour')continue;if(x==='--ignore-case')f.i=1;continue}
+  if(/^-[a-zA-Z]+$/.test(x)){for(const ch of x.slice(1))f[ch]=1;continue}pos.push(x)}
+ if(!pats.length){if(!pos.length)return ER('Usage: grep [OPTION]... PATTERNS [FILE]...\nTry \'grep --help\' for more information.\n',2);pats.push(pos.shift())}
+ let re;try{const src=pats.map(p=>f.F?p.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'):toJs(p,f.E)).join('|');re=new RegExp(f.w?'\\b(?:'+src+')\\b':src,f.i?'i':'')}catch(e){return ER('grep: Invalid regular expression\n',2)}
+ const srcs=[];let err='';if(!pos.length){if(c.stdin==null)return ER('grep: reading from the keyboard is not supported here\n',2);srcs.push([null,c.stdin])}
+ for(const x of pos){const r=readF(x,c,'grep');if(r.e)err+=r.e.replace(/^grep: /,'grep: ');else srcs.push([x,r.t])}
+ let out='',any=false;const multi=pos.length>1&&!f.h;const g=new RegExp(re.source,re.flags+'g');
+ for(const[fn,t]of srcs){let cnt=0;textLines(t).forEach((ln,i)=>{const m=re.test(ln);if(m===!!f.v)return;cnt++;any=true;if(f.c||f.q||f.l)return;const pre=(multi?fn+':':'')+(f.n?(i+1)+':':'');
+   if(f.o&&!f.v){g.lastIndex=0;let mm;while((mm=g.exec(ln))&&mm[0]!==''){out+=pre+mm[0]+'\n'}}
+   else if(c.tty&&!f.v)out+=pre+ln.replace(g,s=>'\x1b[1;31m'+s+'\x1b[0m')+'\n';else out+=pre+ln+'\n'});
+  if(f.c)out+=(multi?fn+':':'')+cnt+'\n';if(f.l&&cnt)out+=fn+'\n'}
+ return{out:f.q?'':out,err,code:any?0:(err?2:1)}};
+function sedParse(sc,ere){const m=/^\s*(?:\/((?:[^\/\\]|\\.)*)\/)?\s*([sdp])(.*)$/s.exec(sc);if(!m)throw new Error("sed: -e expression #1, char 1: unknown command: `"+sc[0]+"'");const addr=m[1]!=null?new RegExp(toJs(m[1],ere)):null;
+ if(m[2]!=='s')return{k:m[2],addr};const rest=m[3],d=rest[0];if(!d)throw new Error('sed: -e expression #1: unterminated `s\' command');const parts=[];let cur='',i=1;
+ while(i<rest.length&&parts.length<2){if(rest[i]==='\\'&&i+1<rest.length){cur+=rest[i+1]===d?d:rest[i]+rest[i+1];i+=2;continue}if(rest[i]===d){parts.push(cur);cur=''}else cur+=rest[i];i++}
+ if(parts.length<2)throw new Error("sed: -e expression #1: unterminated `s' command");const fl=rest.slice(i);
+ let rep='';for(let k=0;k<parts[1].length;k++){const ch=parts[1][k];if(ch==='\\'&&k+1<parts[1].length){const n=parts[1][++k];rep+=/\d/.test(n)?'$'+n:n==='n'?'\n':n==='&'?'&':n}else if(ch==='&')rep+='$&';else if(ch==='$')rep+='$$';else rep+=ch}
+ return{k:'s',addr,re:new RegExp(toJs(parts[0],ere),(fl.includes('g')?'g':'')+(fl.includes('i')||fl.includes('I')?'i':'')),rep,p:fl.includes('p')}}
+CMDS.sed=(a,c)=>{let n=false,ins=false,ere=false;const sc=[],pos=[];
+ for(let i=0;i<a.length;i++){const x=a[i];if(x==='-e'){sc.push(a[++i]);continue}if(x==='--in-place'||/^-i/.test(x)&&!/^-[nEr]+$/.test(x)){ins=true;continue}if(x==='--regexp-extended'){ere=true;continue}
+  if(/^-[nEir]+$/.test(x)){for(const ch of x.slice(1)){if(ch==='n')n=true;if(ch==='i')ins=true;if(ch==='E'||ch==='r')ere=true}continue}if(x.startsWith('-')&&x!=='-')continue;pos.push(x)}
+ if(!sc.length){if(!pos.length)return ER('Usage: sed [OPTION]... {script-only-if-no-other-script} [input-file]...\n');sc.push(pos.shift())}
+ let cmds;try{cmds=sc.join('\n').split('\n').map(s=>sedParse(s,ere))}catch(e){return ER(e.message+'\n')}
+ const run=t=>{let out='';textLines(t).forEach(ln=>{let del=false,pr=false,cur=ln;for(const cm of cmds){if(cm.addr&&!cm.addr.test(cur))continue;if(cm.k==='d'){del=true;break}if(cm.k==='p'){out+=cur+'\n';continue}
+   if(cm.k==='s'){const nx=cur.replace(cm.re,cm.rep);if(nx!==cur&&cm.p)pr=true;cur=nx}}
+   if(del)return;if(pr)out+=cur+'\n';if(!n)out+=cur+'\n'});return out};
+ if(!pos.length){if(ins)return ER('sed: no input files\n');if(c.stdin==null)return ER('sed: reading from the keyboard is not supported here\n');return R0(run(c.stdin))}
+ let out='',err='',code=0;for(const x of pos){const r=readF(x,c,'sed');if(r.e){err+=r.e.replace(/^sed: (.*): No such file or directory/,"sed: can't read $1: No such file or directory");code=2;continue}
+  const res=run(r.t);if(ins){if(!dirW(split(norm(tilde(x),c.tab.cwd))[0]?getN(split(norm(tilde(x),c.tab.cwd))[0]):R,c)){err+="sed: couldn't open temporary file: Permission denied\n";code=4;continue}r.n.c=res;r.n.mt=Date.now()}else out+=res}
+ return{out,err,code}};
+CMDS.base64=(a,c)=>{let d=false,w=76;const files=[];for(let i=0;i<a.length;i++){const x=a[i];if(x==='-d'||x==='--decode'||x==='-D')d=true;else if(x==='-w'||x==='--wrap')w=+a[++i];else if(/^-w\d+$/.test(x))w=+x.slice(2);else if(x.startsWith('--wrap='))w=+x.split('=')[1];else if(x.startsWith('-')&&x!=='-')continue;else files.push(x)}
+ let text;if(files.length){const r=readF(files[0],c,'base64');if(r.e)return ER(r.e);text=r.t}else if(c.stdin!=null)text=c.stdin;else return ER('base64: reading from the keyboard is not supported here; pipe text into it\n');
+ if(d){const s=text.replace(/\s+/g,'');if(!/^[A-Za-z0-9+\/]*={0,2}$/.test(s)||s.length%4!==0)return ER('base64: invalid input\n');try{const bin=atob(s);return R0(new TextDecoder().decode(Uint8Array.from(bin,ch=>ch.charCodeAt(0))))}catch(e){return ER('base64: invalid input\n')}}
+ let bin='';new TextEncoder().encode(text).forEach(b=>bin+=String.fromCharCode(b));const enc=btoa(bin);if(w<=0)return R0(enc);return R0((enc.match(new RegExp('.{1,'+w+'}','g'))||[]).join('\n')+(enc?'\n':''))};
+/* system and network commands */
+CMDS.hostname=(a)=>a.includes('-I')?R0(NET.ip+' \n'):R0('kali\n');
+CMDS.whoami=()=>R0(USER+'\n');CMDS.id=()=>R0('uid=1000(kali) gid=1000(kali) groups=1000(kali),4(adm),27(sudo),100(users)\n');
+CMDS.date=()=>R0(dateStr()+'\n');CMDS.uname=(a)=>R0(a.includes('-a')?'Linux kali 6.12.13-amd64 #1 SMP PREEMPT_DYNAMIC Kali 6.12.13-1kali1 x86_64 GNU/Linux\n':'Linux\n');
+CMDS.sleep=()=>R0('');CMDS.true=()=>R0('');CMDS.false=()=>R0('',1);CMDS.clear=()=>({out:'',err:'',code:0,clear:1});CMDS.exit=()=>R0('This is a browser simulator: close the tab to leave. Your files are saved automatically.\n');CMDS.logout=CMDS.exit;
+CMDS.export=(a,c)=>{a.forEach(x=>{const m=/^(\w+)=(.*)$/.exec(x);if(m)c.tab.vars[m[1]]=m[2]});return R0('')};
+CMDS.history=(a,c)=>R0(HIST.map((h,i)=>String(i+1).padStart(5)+'  '+h).join('\n')+'\n');
+CMDS.apt=(a,c)=>{const sub=a[0];if(sub==='update'||sub==='install'||sub==='upgrade'){if(!c.sudo)return ER('E: Could not open lock file /var/lib/dpkg/lock-frontend - open (13: Permission denied)\nE: Unable to acquire the dpkg frontend lock (/var/lib/dpkg/lock-frontend), are you root?\n',100);
+  if(sub==='install'){const pk=a.slice(1).filter(x=>!x.startsWith('-'));return R0('Reading package lists... Done\nBuilding dependency tree... Done\nReading state information... Done\n'+pk.map(p=>p+' is already the newest version.\n').join('')+'0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.\n')}return R0('Reading package lists... Done\nAll packages are up to date.\n')}return R0('apt 2.9 (amd64)\nUsage: apt [options] command\n')};
+CMDS['apt-get']=CMDS.apt;
+CMDS.bash=(a,c)=>{const f=a.filter(x=>!x.startsWith('-'))[0];if(!f)return R0('');const r=readF(f,c,'bash');if(r.e)return ER(r.e.replace(/^bash: /,'zsh: ').replace(': No such file or directory',': no such file or directory'),127);return runScript(r.t,c)};CMDS.sh=CMDS.bash;CMDS.zsh=CMDS.bash;
+CMDS.ip=(a,c)=>{const s=a[0];
+ if(/^(a|addr|address)$/.test(s||''))return R0(['1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000','    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00','    inet 127.0.0.1/8 scope host lo','       valid_lft forever preferred_lft forever','    inet6 ::1/128 scope host noprefixroute ','       valid_lft forever preferred_lft forever','2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000','    link/ether '+NET.mac+' brd ff:ff:ff:ff:ff:ff','    inet '+NET.ip+'/24 brd 192.168.56.255 scope global dynamic noprefixroute eth0','       valid_lft 86398sec preferred_lft 86398sec','    inet6 fe80::a00:27ff:fe3a:5c9e/64 scope link noprefixroute ','       valid_lft forever preferred_lft forever',''].join('\n'));
+ if(/^(r|route)$/.test(s||''))return R0('default via '+NET.gw+' dev eth0 proto dhcp src '+NET.ip+' metric 100 \n192.168.56.0/24 dev eth0 proto kernel scope link src '+NET.ip+' metric 100 \n');
+ return ER(s?'Object "'+s+'" is unknown, try "ip help".\n':'Usage: ip [ OPTIONS ] OBJECT { COMMAND | help }\n',s?1:255)};
+const jitter=(base,i)=>+(base*(1+((i*37)%11)/100)).toFixed(base<1?3:1);
+CMDS.ping=(a,c)=>{let cnt=0,host=null;for(let i=0;i<a.length;i++){const x=a[i];if(x==='-c')cnt=+a[++i];else if(/^-c\d+$/.test(x))cnt=+x.slice(2);else if(x==='-i'||x==='-W'||x==='-s'||x==='-t')i++;else if(!x.startsWith('-'))host=x}
+ if(!host)return ER('ping: usage error: Destination address required\n',2);const h=resolve(host);if(!h)return ER('ping: '+host+': Name or service not known\n',2);
+ const lbl=h.dn||h.name,show=h.name===h.ip?h.ip:lbl+' ('+h.ip+')',from=h.name===h.ip?h.ip:lbl+' ('+h.ip+')';const head='PING '+show+' 56(84) bytes of data.\n';
+ const line=i=>h.dead?'From '+NET.ip+' icmp_seq='+i+' Destination Host Unreachable\n':'64 bytes from '+from+': icmp_seq='+i+' ttl='+h.ttl+' time='+jitter(h.rtt,i)+' ms\n';
+ const sendP=i=>{if(!CAPS.length||h.dead)return;const t=Date.now(),id=3112;emit([{ts:t,us:rnd(1000),proto:'icmp',src:NET.ip,dst:h.ip,len:64,txt:'ICMP echo request, id '+id+', seq '+i+', length 64'},{ts:t+Math.round(h.rtt),us:rnd(1000),proto:'icmp',src:h.ip,dst:NET.ip,len:64,txt:'ICMP echo reply, id '+id+', seq '+i+', length 64'}])};
+ const stats=n=>{const rs=[];for(let i=1;i<=n;i++)rs.push(jitter(h.rtt,i));const mn=Math.min(...rs),mx=Math.max(...rs),av=rs.reduce((s,x)=>s+x,0)/(n||1);return '\n--- '+lbl+' ping statistics ---\n'+(h.dead?n+' packets transmitted, 0 received, +'+n+' errors, 100% packet loss, time '+(n*1000+60)+'ms\n':n+' packets transmitted, '+n+' received, 0% packet loss, time '+((n-1)*1000+5)+'ms\nrtt min/avg/max/mdev = '+mn.toFixed(3)+'/'+av.toFixed(3)+'/'+mx.toFixed(3)+'/'+(Math.max(0.01,(mx-mn)/3)).toFixed(3)+' ms\n')};
+ if(cnt>0){let o=head;for(let i=1;i<=cnt;i++){o+=line(i);sendP(i)}o+=stats(cnt);return{out:o,err:'',code:h.dead?1:0,slow:600}}
+ return{out:'',err:'',code:0,proc:{start(done){used.add('ping');const t=c.tab;let i=0,iv=null,fin=false;t.out(head);const tk=()=>{i++;t.out(line(i));sendP(i)};tk();iv=setInterval(tk,FAST?200:1000);this.stop=()=>{if(fin)return;fin=true;clearInterval(iv);t.out(stats(i));done(0)}},kill(){this.stop&&this.stop()}}}};
+const HOPS=[['192.168.56.1',.41],['192.168.1.1',2.1],['10.45.0.1',8.5],['203.0.113.9',9.9],null,['198.51.100.21',24.3],['198.51.100.78',31.6],['192.0.2.14',96.2],['203.0.113.201',150.7]];
+CMDS.traceroute=(a,c)=>{let nn=false,host=null;for(const x of a){if(x==='-n')nn=true;else if(!x.startsWith('-'))host=x}if(!host)return ER('Usage:\n  traceroute [ -46dFITnreAUDV ] [ -f first_ttl ] [ -g gate,... ] [ -i device ] [ -m max_ttl ] host\n',2);
+ const h=resolve(host);if(!h)return ER(host+': Name or service not known\nCannot handle "host" cmdline arg `'+host+'\' on position 1 (argc 1)\n',2);
+ const lbl=h.name===h.ip?h.ip:h.name;let o='traceroute to '+lbl+' ('+h.ip+'), 30 hops max, 60 byte packets\n';
+ const hop=(n,ip,r)=>{const nm=nn||!ip?ip:(ip==='192.168.56.1'?'_gateway ('+ip+')':ip+' ('+ip+')');return ' '+String(n).padStart(2)+'  '+(ip?nm+'  '+[0,1,2].map(k=>(r+k*.019).toFixed(3)+' ms').join('  '):'* * *')+'\n'};
+ if(h.lan||h.ip==='127.0.0.1')o+=hop(1,h.ip,.4);else{let n=1;for(const x of HOPS){o+=x?hop(n,x[0],x[1]):hop(n,null);n++}o+=hop(n,h.ip,h.rtt)}return{out:o,err:'',code:0,slow:260}};
+const dnsAns=(h,type)=>type==='A'?[h.ip]:type==='AAAA'?(h.v6?[h.v6]:[]):type==='MX'?(h.mx||[]):type==='NS'?(h.ns||[]):[];
+CMDS.nslookup=(a,c)=>{const n=a.filter(x=>!x.startsWith('-'))[0];if(!n)return R0('> ');const h=HOSTS[n.toLowerCase()];
+ if(!h||h.ip==='127.0.0.1')return{out:'Server:\t\t'+NET.dns+'\nAddress:\t'+NET.dns+'#53\n\n',err:"** server can't find "+n+': NXDOMAIN\n\n',code:1};
+ return R0('Server:\t\t'+NET.dns+'\nAddress:\t'+NET.dns+'#53\n\nNon-authoritative answer:\nName:\t'+n+'\nAddress: '+h.ip+'\n'+(h.v6?'Name:\t'+n+'\nAddress: '+h.v6+'\n':'')+'\n')};
+CMDS.dig=(a,c)=>{let name=null,type='A',short=false;for(const x of a){if(x==='+short')short=true;else if(x.startsWith('+')||x.startsWith('-')||x.startsWith('@'))continue;else if(/^(A|AAAA|MX|NS|TXT|CNAME|SOA|ANY)$/i.test(x)&&name)type=x.toUpperCase();else if(!name)name=x}
+ if(!name)return R0('');const h=HOSTS[name.toLowerCase().replace(/\.$/,'')];const ans=h&&h.ip!=='127.0.0.1'?dnsAns(h,type):[];if(short)return R0(ans.map(x=>x+'\n').join(''));
+ const st=h?'NOERROR':'NXDOMAIN',fq=name.replace(/\.?$/,'.');
+ return R0(['','; <<>> DiG 9.20.4-Debian <<>> '+a.filter(x=>x!=='+short').join(' '),';; global options: +cmd',';; Got answer:',';; ->>HEADER<<- opcode: QUERY, status: '+st+', id: '+(10000+rnd(50000)),';; flags: qr rd ra; QUERY: 1, ANSWER: '+ans.length+', AUTHORITY: 0, ADDITIONAL: 1','',';; OPT PSEUDOSECTION:','; EDNS: version: 0, flags:; udp: 65494',';; QUESTION SECTION:',';'+fq+'\t\tIN\t'+type,'']
+  .concat(ans.length?[';; ANSWER SECTION:'].concat(ans.map(x=>fq+'\t300\tIN\t'+type+'\t'+x)).concat(['']):[]).concat([';; Query time: '+(20+rnd(40))+' msec',';; SERVER: '+NET.dns+'#53('+NET.dns+') (UDP)',';; WHEN: '+dateStr(),';; MSG SIZE  rcvd: '+(60+ans.length*16),'','']).join('\n'))};
+CMDS.whois=(a,c)=>{const n=(a.filter(x=>!x.startsWith('-'))[0]||'').toLowerCase();if(!n)return ER('Usage: whois [OPTION]... OBJECT...\n',2);const h=HOSTS[n];
+ if(!h||!h.whois)return R0('Domain not found.\n>>> Last update of WHOIS database: '+new Date().toISOString().slice(0,19)+'Z <<<\n\nTip: whois answers for registered domains such as nmap.org, not for subdomains.\n');
+ const D=n.toUpperCase(),ns=(h.ns||[]).map(x=>'Name Server: '+x.replace(/\.$/,'').toUpperCase());
+ return R0(['% Simulated WHOIS record for training purposes (not real registry data)','Domain Name: '+D,'Registry Domain ID: D'+(1e7+rnd(9e7))+'-LROR','Registrar WHOIS Server: whois.registrar.example','Registrar URL: https://registrar.example','Updated Date: 2026-03-14T08:21:09Z','Creation Date: '+(n==='nmap.org'?'1999-01-18':'1995-08-14')+'T05:00:00Z','Registry Expiry Date: 2027-01-18T05:00:00Z','Registrar: Example Registrar, Inc.','Registrar IANA ID: 9999','Registrar Abuse Contact Email: abuse@registrar.example','Registrar Abuse Contact Phone: +1.0000000000','Domain Status: clientTransferProhibited https://icann.org/epp#clientTransferProhibited','Registry Registrant ID: REDACTED FOR PRIVACY','Registrant Organization: REDACTED FOR PRIVACY','Registrant State/Province: REDACTED FOR PRIVACY','Registrant Country: US','Admin Email: Please query the RDDS service of the Registrar of Record','Tech Email: Please query the RDDS service of the Registrar of Record'].concat(ns).concat(['DNSSEC: unsigned','URL of the ICANN Whois Inaccuracy Complaint Form: https://www.icann.org/wicf/','>>> Last update of WHOIS database: '+new Date().toISOString().slice(0,19)+'Z <<<','','For more information on Whois status codes, please visit https://icann.org/epp','']).join('\n'))};
+CMDS['arp-scan']=(a,c)=>{if(!c.sudo)return ER('arp-scan: pcap_activate: eth0: You don\'t have permission to perform this capture on that device\n(socket: Operation not permitted)\n',1);if(!a.includes('--localnet')&&!a.includes('-l'))return ER('arp-scan: need target specification: use --localnet or give an IP range\n',1);
+ return{out:['Interface: eth0, type: EN10MB, MAC: '+NET.mac+', IPv4: '+NET.ip,'Starting arp-scan 1.10.0 with 256 hosts (https://github.com/royhills/arp-scan)','192.168.56.1\t0a:00:27:00:00:00\t(Unknown: locally administered)','192.168.56.100\t08:00:27:5b:2d:11\tPCS Systems AG','192.168.56.101\t08:00:27:c4:77:a0\tPCS Systems AG','','3 packets received by filter, 0 packets dropped by kernel','Ending arp-scan 1.10.0: 256 hosts scanned in 1.987 seconds (128.84 hosts/sec). 3 responded',''].join('\n'),err:'',code:0,slow:150}};
+const SOCK=[['udp','UNCONN','0','0','0.0.0.0:68','0.0.0.0:*','dhclient',612],['tcp','LISTEN','0','128','127.0.0.1:631','0.0.0.0:*','cupsd',845]];
+CMDS.ss=(a,c)=>{const f=a.filter(x=>/^-[a-z]+$/.test(x)).join('').replace(/-/g,'');const rows=f.includes('l')?SOCK.filter(r=>(r[0]==='tcp'&&f.includes('t'))||(r[0]==='udp'&&f.includes('u'))||!/[tu]/.test(f)):[];const pr=f.includes('p')&&c.sudo;
+ const L=[['Netid','State','Recv-Q','Send-Q','Local Address:Port','Peer Address:Port','Process']].concat(rows.map(r=>[r[0],r[1],r[2],r[3],r[4],r[5],pr?'users:(("'+r[6]+'",pid='+r[7]+',fd=6))':'']));
+ return R0(L.map(r=>r[0].padEnd(6)+r[1].padEnd(8)+r[2].padEnd(8)+r[3].padEnd(8)+r[4].padEnd(25)+r[5].padEnd(23)+r[6]).join('\n')+'\n')};
+CMDS.netstat=(a,c)=>{const f=a.join('').replace(/-/g,'');const pr=f.includes('p')&&c.sudo;let o=f.includes('p')&&!c.sudo?'(Not all processes could be identified, non-owned process info\n will not be shown, you would have to be root to see it all.)\n':'';
+ o+='Active Internet connections (only servers)\nProto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    \n';
+ for(const r of SOCK)o+=r[0].padEnd(6)+'     0      0 '+r[4].padEnd(23)+' '+r[5].padEnd(23)+' '+(r[0]==='tcp'?'LISTEN':'').padEnd(11)+' '+(pr?r[7]+'/'+r[6]:'-').padEnd(19)+'\n';return R0(o)};
+function nmapCmd(a,c){let sV=false,A=false,ports=null,out=null;const tg=[];for(let i=0;i<a.length;i++){const x=a[i];if(x==='-sV')sV=true;else if(x==='-A')A=true;else if(x==='-p')ports=a[++i];else if(/^-p.+/.test(x))ports=x.slice(2);else if(x==='-oN')out=a[++i];else if(x.startsWith('-'))continue;else tg.push(x)}
+ if(!tg.length)return ER('Nmap 7.95 ( https://nmap.org )\nUsage: nmap [Scan Type(s)] [Options] {target specification}\nTARGET SPECIFICATION:\n  Can pass hostnames, IP addresses, networks, etc.\n  Ex: scanme.nmap.org, 192.168.0.0/16, 10.0.0-255.1-254\nHOST DISCOVERY:\n  -sn: Ping Scan - disable port scan\nSCAN TECHNIQUES:\n  -sS/sT/sA/sW/sM: TCP SYN/Connect()/ACK/Window/Maimon scans\nPORT SPECIFICATION AND SCAN ORDER:\n  -p <port ranges>: Only scan specified ports\nSERVICE/VERSION DETECTION:\n  -sV: Probe open ports to determine service/version info\nOUTPUT:\n  -oN/-oX/-oG <file>: Output scan in normal, XML, and grepable format\nMISC:\n  -A: Enable OS detection, version detection, script scanning, and traceroute\n');
+ if(A&&!c.sudo)return ER('TCP/IP fingerprinting (for OS scan) requires root privileges.\nQUITTING!\n',1);
+ const h=resolve(tg[0]);const t0=utcStr();let o='Starting Nmap 7.95 ( https://nmap.org ) at '+t0+'\n';
+ if(!h||h.dead&&0)return{out:o+'Nmap done: 0 IP addresses (0 hosts up) scanned in 0.03 seconds\n',err:'Failed to resolve "'+tg[0]+'".\nWARNING: No targets were specified, so 0 hosts scanned.\n',code:0};
+ let list=null;if(ports){list=[];for(const part of ports.split(',')){const m=/^(\d+)-(\d+)$/.exec(part);if(m){for(let p=+m[1];p<=Math.min(+m[2],+m[1]+2000);p++)list.push(p)}else if(/^\d+$/.test(part))list.push(+part)}}
+ const known=Object.keys(h.ports).map(Number).sort((x,y)=>x-y);const open=list?known.filter(p=>list.includes(p)):known;const scanned=list?list.length:1000;
+ const lbl=h.name===h.ip?h.ip:h.name+' ('+h.ip+')';let r='';
+ if(h.dead){r+='Nmap scan report for '+lbl+'\nHost seems down. If it is really up, but blocking our ping probes, try -Pn\n';}
+ else{r+='Nmap scan report for '+lbl+'\nHost is up ('+(h.rtt/1000).toFixed(3)+'s latency).\n';if(h.v6&&h.name!==h.ip)r+='Other addresses for '+h.name+' (not scanned): '+h.v6+'\n';
+  const hid=scanned-open.length;if(hid>0)r+='Not shown: '+hid+' filtered tcp ports (no-response)\n';
+  if(open.length){const ver=sV||A,pw=Math.max(4,...open.map(p=>(p+'/tcp').length))+1,sw=Math.max(7,...open.map(p=>h.ports[p][0].length))+1;
+   r+='PORT'.padEnd(pw)+'STATE SERVICE'.replace('SERVICE','SERVICE'.padEnd(sw)).replace('STATE ','STATE ')+(ver?'VERSION':'')+'\n';
+   open.forEach(p=>{const sv=h.ports[p];r+=(p+'/tcp').padEnd(pw)+'open  '+(ver&&sv[1]?sv[0].padEnd(sw)+sv[1]:sv[0])+'\n';
+    if(A&&p===22)r+='| ssh-hostkey: \n|   1024 ac:00:a0:1a:82:ff:cc:55:99:dc:67:2b:34:97:6b:75 (DSA)\n|   2048 20:3d:2d:44:62:2a:b0:5a:9d:b5:b3:05:14:c2:a6:b2 (RSA)\n|   256 96:02:bb:5e:57:54:1c:4e:45:2f:56:4c:4a:24:b2:57 (ECDSA)\n|_  256 33:fa:91:0f:e0:e1:7b:1f:6d:05:a2:b0:f1:54:41:56 (ED25519)\n';
+    if(A&&p===80)r+='|_http-server-header: '+h.server+'\n|_http-title: '+h.title+'\n'})}
+  else r+='All '+scanned+' scanned ports on '+lbl+' are in ignored states.\n';
+  if(A&&open.length)r+='Device type: general purpose\nRunning: Linux 3.X|4.X\nOS CPE: cpe:/o:linux:linux_kernel:3 cpe:/o:linux:linux_kernel:4\nOS details: Linux 3.2 - 4.9\nNetwork Distance: 10 hops\n';
+  if((sV||A)&&open.some(p=>/ssh|http/.test(h.ports[p][0])))r+='Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel\n';
+  if(A&&open.length)r+='\nTRACEROUTE (using port 80/tcp)\nHOP RTT       ADDRESS\n1   0.41 ms   192.168.56.1\n2   2.10 ms   192.168.1.1\n3   8.50 ms   10.45.0.1\n...\n10  '+h.rtt+'.00 ms '+h.ip+'\n'}
+ const secs=(sV||A?9.4:4.5)+rnd(30)/10;let tail='';if(sV||A)tail+='\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\n';else tail+='\n';
+ const done='Nmap done: 1 IP address ('+(h.dead?0:1)+' host'+(h.dead?'s':'')+' up) scanned in '+secs.toFixed(2)+' seconds\n';
+ if(out){const body='# Nmap 7.95 scan initiated '+t0+' as: nmap '+a.join(' ')+'\n'+r+tail+'# Nmap done at '+t0+' -- 1 IP address (1 host up) scanned in '+secs.toFixed(2)+' seconds\n';const e=put(norm(tilde(out),c.tab.cwd),body,{sudo:c.sudo,owner:c.sudo?'root':USER});if(e)return ER('Failed to open normal output file '+out+' for writing: '+e+'\nQUITTING!\n',1)}
+ return{out:o+r+tail+done,err:'',code:0,slow:110}}
+CMDS.nmap=nmapCmd;
+const hdr=(h,extra)=>['HTTP/1.1 200 OK','Date: '+gmt(),'Server: '+h.server,'Accept-Ranges: bytes','Vary: Accept-Encoding'].concat(extra||[],['Content-Type: text/html']);
+function urlParts(u){const m=/^(?:(https?):\/\/)?([^\/:?#]+)(?::(\d+))?(\/[^?#]*)?/.exec(u);return m?{sc:m[1]||'http',host:m[2],port:+(m[3]||(m[1]==='https'?443:80)),path:m[4]||'/'}:null}
+CMDS.curl=(a,c)=>{let I=false,s=false,o=null,inc=false,u=null,v=false;for(let i=0;i<a.length;i++){const x=a[i];if(x==='--head')I=true;else if(x==='--silent')s=true;else if(x==='--include')inc=true;else if(x==='--output'||x==='-o'){o=a[++i]}else if(/^-[a-zA-Z]+$/.test(x)){for(const ch of x.slice(1)){if(ch==='I')I=true;else if(ch==='s')s=true;else if(ch==='i')inc=true;else if(ch==='v')v=true;else if(ch==='o'&&x.endsWith('o'))o=a[++i]}}else if(!x.startsWith('-'))u=x}
+ if(!u)return ER("curl: try 'curl --help' or 'curl --manual' for more information\n",2);const p=urlParts(u);const h=p&&resolve(p.host);
+ if(!h)return{out:'',err:s?'':'curl: (6) Could not resolve host: '+(p?p.host:u)+'\n',code:6};if(!h.ports[p.port]&&h.name!=='localhost')return{out:'',err:s?'':'curl: (7) Failed to connect to '+p.host+' port '+p.port+' after 21 ms: Could not connect to server\n',code:7};
+ const body=pageOf(h),hl=hdr(h,I?[]:['Content-Length: '+body.length]),hd=hl.join('\n')+'\n\n';const pk=tcpSession(h,p.port,86+p.host.length,I?hd.length:hd.length+body.length,(I?'HEAD':'GET')+' '+p.path+' HTTP/1.1','HTTP/1.1 200 OK');emit(pk);
+ let out=I?hd:inc?hd+body:body;if(v)out=''.concat('*   Trying '+h.ip+':'+p.port+'...\n','* Connected to '+p.host+' ('+h.ip+') port '+p.port+'\n','> '+(I?'HEAD':'GET')+' '+p.path+' HTTP/1.1\n> Host: '+p.host+'\n> User-Agent: curl/8.12.1\n> Accept: */*\n>\n< '+hl.join('\n< ')+'\n<\n',I?'':body);
+ if(o){const e=put(norm(tilde(o),c.tab.cwd),out,{});if(e)return ER('curl: (23) Failure writing output to destination\n',23);return R0('')}return R0(out)};
+CMDS.wget=(a,c)=>{let q=false,o=null,u=null;for(let i=0;i<a.length;i++){const x=a[i];if(x==='-q'||x==='--quiet')q=true;else if(x==='-O'){o=a[++i]}else if(x.startsWith('--output-document='))o=x.split('=')[1];else if(/^-[a-zA-Z]+$/.test(x)){if(x.includes('q'))q=true}else if(!x.startsWith('-'))u=x}
+ if(!u)return ER('wget: missing URL\nUsage: wget [OPTION]... [URL]...\n\nTry `wget --help\' for more options.\n',1);const p=urlParts(u);const h=p&&resolve(p.host);
+ if(!h)return ER('wget: unable to resolve host address \''+(p?p.host:u)+'\'\n',4);if(!h.ports[p.port])return ER('--'+dateStr()+'--  '+u+'\nConnecting to '+p.host+'|'+h.ip+'|:'+p.port+'... failed: Connection timed out.\n',4);
+ const body=pageOf(h);emit(tcpSession(h,p.port,90+p.host.length,body.length+200,'GET '+p.path+' HTTP/1.1','HTTP/1.1 200 OK'));
+ let name=o||(p.path.split('/').pop()||'index.html');if(o==='-')return R0(body);let ex=getN(norm(name,c.tab.cwd)),fn=name;if(!o){let k=0;while(getN(norm(fn,c.tab.cwd)))fn=name+'.'+(++k)}
+ const e=put(norm(tilde(fn),c.tab.cwd),body,{});if(e)return ER('wget: '+fn+': '+e+'\n',3);
+ const log=q?'':'--'+new Date().toISOString().slice(0,19).replace('T',' ')+'--  '+(u.startsWith('http')?u:'http://'+u)+'\nResolving '+p.host+' ('+p.host+')... '+h.ip+'\nConnecting to '+p.host+' ('+p.host+')|'+h.ip+'|:'+p.port+'... connected.\nHTTP request sent, awaiting response... 200 OK\nLength: '+body.length+' ('+(body.length/1024).toFixed(1)+'K) [text/html]\nSaving to: \u2018'+fn+'\u2019\n\n'+fn.padEnd(20)+'100%[===================>]  '+(body.length/1024).toFixed(2)+'K  --.-KB/s    in 0.2s    \n\n'+new Date().toISOString().slice(0,19).replace('T',' ')+' (32.5 MB/s) - \u2018'+fn+'\u2019 saved ['+body.length+'/'+body.length+']\n\n';
+ return{out:'',err:log,code:0}};
+CMDS.nc=(a,c)=>{let v=false,w=0,z=false;const pos=[];for(let i=0;i<a.length;i++){const x=a[i];if(x==='-w'){w=+a[++i]}else if(/^-[a-zA-Z]+$/.test(x)){if(x.includes('v'))v=true;if(x.includes('z'))z=true;if(x.includes('n')){}}else pos.push(x)}
+ if(pos.length<2)return ER('usage: nc [-options] hostname port[s] [ports] ...\n',1);const h=resolve(pos[0]),port=+pos[1];if(!h)return ER('nc: getaddrinfo for host "'+pos[0]+'" port '+pos[1]+': Name or service not known\n',1);
+ const sv=h.ports[port];const lbl=h.name===h.ip?h.ip:h.name;if(!sv)return ER((v?lbl+' ['+h.ip+'] '+port+' (?) : Connection timed out\n':''),1);
+ const svc=({22:'ssh',80:'http',9929:'nping-echo',31337:'elite',443:'https'})[port]||'?';const info=v?lbl+' ['+h.ip+'] '+port+' ('+svc+') open\n':'';
+ if(port===22){emit(tcpSession(h,22,0,0,'','',h.banner?h.banner.length+2:0));return{out:(h.banner||'')+'\n',err:info,code:0,proc:undefined}}
+ if(port===80||port===443){if(c.stdin&&c.stdin.trim()){const m=/^(GET|HEAD|POST)\s+(\S+)/.exec(c.stdin.trim());const body=pageOf(h);const head=hdr(h,['Connection: close']);const hd=head.join('\n')+'\n\n';emit(tcpSession(h,port,c.stdin.length,m&&m[1]==='GET'?hd.length+body.length:hd.length,m?m[1]+' '+m[2]+' HTTP/1.0':'request','HTTP/1.1 200 OK'));
+   return{out:m?(m[1]==='HEAD'?hd:hd+body):'HTTP/1.1 400 Bad Request\n\n',err:info,code:0}}}
+ if(z)return{out:'',err:info,code:0};
+ if(w>0&&c.stdin==null)return{out:'',err:info,code:0};
+ return{out:'',err:info,code:0,proc:{start(done){used.add('nc');let fin=false;this.stop=()=>{if(!fin){fin=true;done(130)}}},kill(){this.stop&&this.stop()}}}};
+function parseFilter(toks){const f={host:null,port:null,proto:null};for(let i=0;i<toks.length;i++){const x=toks[i];if(x==='host'){const h=resolve(toks[++i]);if(!h)return{err:'tcpdump: '+toks[i]+': Name or service not known\n'};f.host=h.ip}else if(x==='port')f.port=+toks[++i];else if(['tcp','udp','icmp'].includes(x))f.proto=x}return f}
+CMDS.tcpdump=(a,c)=>{let ifc=null,nn=false,cnt=0,w=null,r=null;const ft=[];for(let i=0;i<a.length;i++){const x=a[i];if(x==='-i')ifc=a[++i];else if(x==='-c')cnt=+a[++i];else if(x==='-w')w=a[++i];else if(x==='-r')r=a[++i];else if(x==='-nn'||x==='-n')nn=true;else if(x==='-s'||x==='-B'||x==='-F')i++;else if(x.startsWith('-'))continue;else ft.push(x)}
+ const f=parseFilter(ft);if(f.err)return ER(f.err,1);
+ if(r){const rd=readF(r,c,'tcpdump');if(rd.e)return ER(rd.e.replace(/^tcpdump: (.*): (No such file or directory)$/m,'tcpdump: $1: $2'),1);if(!rd.n.pcap)return ER('tcpdump: '+r+': unknown file format\n',1);
+  let ps=rd.n.pcap.filter(p=>(!f.host||p.src===f.host||p.dst===f.host)&&(!f.port||p.sp===f.port||p.dp===f.port)&&(!f.proto||p.proto===f.proto));if(cnt)ps=ps.slice(0,cnt);
+  return{out:ps.map(p=>pktLine(p,nn)+'\n').join(''),err:'reading from file '+r+', link-type EN10MB (Ethernet), snapshot length 262144\n',code:0}}
+ if(!c.sudo)return ER("tcpdump: eth0: You don't have permission to perform this capture on that device\n(socket: Operation not permitted)\n",1);
+ ifc=ifc||'eth0';if(!['eth0','any','lo'].includes(ifc))return ER('tcpdump: '+ifc+': No such device exists\n(SIOCGIFHWADDR: No such device)\n',1);
+ const t=c.tab,wabs=w?norm(tilde(w),t.cwd):null;
+ if(wabs){const[pa]=split(wabs),pn=getN(pa);if(!pn||pn.t!=='d')return ER('tcpdump: '+w+': No such file or directory\n',1)}
+ return{out:'',err:'',code:0,proc:{start(done){used.add('tcpdump');if(c.sudo)used.add('sudo');const cap={tab:t,host:f.host,port:f.port,proto:f.proto,count:cnt,pkts:[],live:!w,nn,done:false};let fin=false;
+   cap.finish=()=>{if(fin)return;fin=true;cap.done=true;const i=CAPS.indexOf(cap);if(i>=0)CAPS.splice(i,1);
+    if(wabs){const[pa,nm]=split(wabs),pn=getN(pa);pn.ch[nm]={t:'f',o:'root',m:0o644,c:'',pcap:cap.pkts,mt:Date.now()};pn.mt=Date.now()}
+    const n=cap.pkts.length;t.out(n+' packets captured\n'+n+' packets received by filter\n0 packets dropped by kernel\n');done(0)};
+   CAPS.push(cap);this.stop=cap.finish;t.out('tcpdump: listening on '+ifc+', link-type EN10MB (Ethernet), snapshot length 262144 bytes\n')},kill(){this.stop&&this.stop()}}}};
+CMDS.wireshark=(a,c)=>{const f=a.filter(x=>!x.startsWith('-'))[0];if(!f)return R0('Wireshark (simulated viewer). Usage: wireshark captures/web.pcap &\n');const r=readF(f,c,'wireshark');if(r.e)return ER('wireshark: The file "'+f+'" doesn\'t exist.\n');if(!r.n.pcap)return ER('wireshark: The file "'+f+'" isn\'t a capture file in a format Wireshark understands.\n');
+ if(typeof openWire==='function')openWire(f,r.n.pcap);return R0('Wireshark (simulated viewer) opened '+f+'. Type tcp.port == 80 in the display filter bar.\n')};
+CMDS.help=()=>R0(['\x1b[1;36mBlack Ice Kali Terminal Simulator\x1b[0m: commands you can practise','','  Files:    pwd ls cd mkdir touch cat head tail cp mv rm chmod shred echo wc sort uniq','  Text:     grep sed base64 (with --decode)','  System:   sudo (password: kali) hostname whoami id date uname history clear apt','  Network:  ip a | ip route | hostname -I | ping | traceroute | ss | netstat','            nslookup dig whois arp-scan nmap curl wget nc tcpdump wireshark','  Scripts:  ./script.sh  or  bash script.sh   (needs chmod +x for ./)','','Shell features: pipes |  redirects > >> 2>/dev/null  heredoc << EOF  variables $VAR','                command substitution $(...)  && ||  globs *  Tab completion  history (Up/Down)','','Tip: network tools show simulated sample results. Practice here, then repeat on real Kali.',''].join('\n'));
+/*UI*/
+</script>
+<script>
+let HIST=[];try{HIST=JSON.parse(localStorage.getItem('bikali-hist')||'[]')}catch(e){}
+try{JSON.parse(localStorage.getItem('bikali-used')||'[]').forEach(x=>used.add(x));FAST=localStorage.getItem('bikali-fast')==='1'}catch(e){}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const CHIPS=['pwd','ls','cd','mkdir','cat','head','tail','touch','cp','mv','rm','sudo','ip a','ip route','hostname -I','ping','traceroute','ss / netstat','nslookup','dig','nmap','nmap -sV','nmap -A','arp-scan','tcpdump','curl','wget','nc','whois','base64 --decode','chmod','grep','sed','shred'];
+function ansi(s){s=esc(s).replace(/\x1b\[K/g,'');let open=false;const r=s.replace(/\x1b\[([0-9;]*)m/g,(m,cd)=>{let o=open?'</span>':'';open=false;const c=cd.split(';').filter(x=>x!==''&&x!=='0');if(c.length){o+='<span class="'+c.map(x=>'a'+x).join(' ')+'">';open=true}return o});return r+(open?'</span>':'')}
+let tabs=[],act=null,tid=0,saveT=null;
+function persist(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem('bikali-fs',JSON.stringify(R));localStorage.setItem('bikali-hist',JSON.stringify(HIST.slice(-200)));localStorage.setItem('bikali-used',JSON.stringify([...used]));localStorage.setItem('bikali-fast',FAST?'1':'0')}catch(e){}renderChips()},300)}
+function renderChips(){$('#chips').innerHTML=CHIPS.map(c=>'<span class="'+(used.has(c)?'on':'')+'">'+esc(c)+'</span>').join('');const n=CHIPS.filter(c=>used.has(c)).length;$('#cnt').textContent=n+'/'+CHIPS.length;$('#pbar').style.width=(n/CHIPS.length*100)+'%'}
+function promptHtml(t){return '<span class="br">┌──(</span><span class="un">kali㉿kali</span><span class="br">)-[</span><span class="pa">'+esc(disp(t.cwd))+'</span><span class="br">]</span>'}
+function outText(t,s){if(!s)return;t.log.insertAdjacentHTML('beforeend',ansi(s));t.lastNL=s.endsWith('\n');t.el.scrollTop=t.el.scrollHeight}
+function echoLine(t,line){t.log.insertAdjacentHTML('beforeend',promptHtml(t)+'\n<span class="br">└─</span><span class="un">$</span> '+esc(line)+'\n');t.lastNL=true}
+function setPrompt(t){if(t.pw){t.p1.style.display='none';t.p2.textContent='[sudo] password for kali: ';t.inp.type='password'}else if(t.hd){t.p1.style.display='none';t.p2.textContent='> ';t.inp.type='text'}else{t.p1.style.display='';t.p1.innerHTML=promptHtml(t);t.p2.textContent='└─$ ';t.inp.type='text'}
+ if(t===act)$('#ttl').textContent='kali@kali: '+disp(t.cwd);t.title.textContent='Terminal '+t.id+' · '+(t.cwd===HOME?'~':disp(t.cwd).split('/').pop())}
+function newTab(){const id=++tid,el=document.createElement('div');el.className='scr';el.innerHTML='<pre class="log"></pre><div class="p1l"></div><div class="row"><span class="p2l"></span><input class="in" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" aria-label="Terminal input"></div>';$('#screens').appendChild(el);
+ const tab=document.createElement('div');tab.className='tab';tab.innerHTML='<span class="tt"></span><span class="x" title="Close tab">×</span>';$('#tabs').insertBefore(tab,$('#nt'));
+ const t={id,el,tabEl:tab,title:tab.querySelector('.tt'),log:el.querySelector('.log'),p1:el.querySelector('.p1l'),p2:el.querySelector('.p2l'),inp:el.querySelector('.in'),cwd:HOME,prev:HOME,vars:{},status:0,q:[],busy:false,proc:null,pw:null,hd:null,lastNL:true,hi:HIST.length};
+ t.out=s=>outText(t,s);t.eout=t.out;t.clear=()=>{t.log.innerHTML=''};tabs.push(t);
+ tab.addEventListener('click',e=>{if(e.target.classList.contains('x')){closeTab(t);return}activate(t)});el.addEventListener('click',()=>{if(!getSelection().toString())t.inp.focus()});
+ t.inp.addEventListener('keydown',e=>onKey(t,e));
+ t.inp.addEventListener('paste',e=>{const tx=(e.clipboardData||window.clipboardData).getData('text');if(/[\r\n]/.test(tx)){e.preventDefault();const ls=tx.replace(/\r/g,'').split('\n');if(ls[ls.length-1]==='')ls.pop();ls[0]=t.inp.value+ls[0];t.inp.value='';t.q.push(...ls);pump(t)}});
+ setPrompt(t);activate(t);return t}
+function activate(t){act=t;tabs.forEach(x=>{x.el.classList.toggle('on',x===t);x.tabEl.classList.toggle('on',x===t)});$('#ttl').textContent='kali@kali: '+disp(t.cwd);setTimeout(()=>t.inp.focus(),0);if(typeof deskSync==='function')deskSync(t)}
+function closeTab(t){if(tabs.length<2)return;if(t.proc)t.proc.kill();tabs=tabs.filter(x=>x!==t);t.el.remove();t.tabEl.remove();if(act===t)activate(tabs[tabs.length-1])}
+function pump(t){while(!t.busy&&!t.pw&&t.q.length)submit(t,t.q.shift())}
+function finish(t){if(!t.lastNL)outText(t,'\x1b[7m%\x1b[0m\n');t.busy=false;t.proc=null;t.inp.readOnly=false;t.inp.disabled=false;setPrompt(t);if(typeof deskUpdate==='function')deskUpdate(t);persist();if(t===act)t.inp.focus();pump(t)}
+function submit(t,line){
+ if(t.pw){const p=t.pw;if(line==='kali'){SUDO=true;t.pw=null;setPrompt(t);outText(t,'[sudo] password for kali: \n');p.go()}else{p.tries++;outText(t,'[sudo] password for kali: \n');if(p.tries<3)outText(t,'Sorry, try again.\n');else{outText(t,'sudo: 3 incorrect password attempts\n');t.pw=null;t.status=1;finish(t)}}return}
+ if(t.hd){outText(t,'> '+line+'\n');if(line===t.hd.delim){const h=t.hd;t.hd=null;setPrompt(t);let text=h.lines.join('\n')+(h.lines.length?'\n':'');if(!h.quoted)text=dq(text,t);launch(t,h.line,text)}else t.hd.lines.push(line);return}
+ echoLine(t,line);if(line.trim()){HIST.push(line)}t.hi=HIST.length;
+ const hd=findHd(line);if(hd){t.hd={line,delim:hd.delim,quoted:hd.quoted,lines:[]};setPrompt(t);return}
+ launch(t,line,null)}
+function launch(t,line,here){t.lastLine=line;const need=/(^|[|;&]\s*)sudo(\s|$)/.test(line)&&!SUDO;
+ const go=()=>{t.busy=true;t.inp.readOnly=true;runLine(line,t,{here},()=>finish(t))};
+ if(need){t.pw={tries:0,go};outText(t,'\x1b[2m(simulator hint: the sudo password is kali)\x1b[0m\n');t.busy=false;setPrompt(t);t.inp.focus()}else go()}
+function ctrlC(t){if(t.proc&&t.proc.kill){outText(t,'^C\n');t.proc.kill();return}if(t.pw){outText(t,'\n');t.pw=null;t.q=[];t.status=130;finish(t);return}if(t.hd){t.hd=null;t.q=[];outText(t,'^C\n');setPrompt(t);return}
+ echoLine(t,t.inp.value+'^C');t.inp.value='';t.q=[]}
+function complete(t){const v=t.inp.value,pos=t.inp.selectionStart,left=v.slice(0,pos),word=/(\S*)$/.exec(left)[1],before=left.slice(0,left.length-word.length);const first=!/\S/.test(before)||/(^|[|;&]\s*)(sudo\s+)?$/.test(before);let cands=[];
+ if(first&&!word.includes('/'))cands=Object.keys(CMDS).filter(c=>c.startsWith(word)).sort();
+ else{const i=word.lastIndexOf('/'),dp=i>=0?word.slice(0,i+1):'',pre=i>=0?word.slice(i+1):word,dn=getN(norm(tilde(dp)||'.',t.cwd));if(dn&&dn.t==='d')cands=Object.keys(dn.ch).filter(n=>n.startsWith(pre)&&(pre.startsWith('.')||!n.startsWith('.'))).sort().map(n=>dp+n+(dn.ch[n].t==='d'?'/':''))}
+ if(!cands.length)return;let cp=cands[0];for(const c of cands)while(!c.startsWith(cp))cp=cp.slice(0,-1);
+ if(cp.length>word.length||cands.length===1){const add=cands.length===1&&!cp.endsWith('/')?cp+' ':cp;t.inp.value=before+add+v.slice(pos);const np=(before+add).length;t.inp.setSelectionRange(np,np)}
+ else{echoLine(t,v);outText(t,cands.map(x=>x.split('/').filter(Boolean).pop()+(x.endsWith('/')?'/':'')).join('  ')+'\n')}}
+function onKey(t,e){
+ if(e.ctrlKey&&e.key==='c'){if(t.inp.selectionStart!==t.inp.selectionEnd&&!t.busy)return;e.preventDefault();ctrlC(t);return}
+ if(e.ctrlKey&&e.key==='l'){e.preventDefault();t.clear();return}
+ if(e.ctrlKey&&e.key==='u'){e.preventDefault();t.inp.value=t.inp.value.slice(t.inp.selectionStart);return}
+ if(e.ctrlKey&&e.key==='a'){e.preventDefault();t.inp.setSelectionRange(0,0);return}
+ if(e.ctrlKey&&e.key==='e'){e.preventDefault();t.inp.setSelectionRange(1e4,1e4);return}
+ if(t.busy&&!t.pw){e.preventDefault();return}
+ if(e.key==='Enter'){e.preventDefault();const v=t.inp.value;t.inp.value='';submit(t,v);return}
+ if(e.key==='Tab'){e.preventDefault();if(!t.pw&&!t.hd)complete(t);return}
+ if(e.key==='ArrowUp'){e.preventDefault();if(t.hi===undefined||t.hi>HIST.length)t.hi=HIST.length;if(t.hi>0){t.hi--;t.inp.value=HIST[t.hi]}return}
+ if(e.key==='ArrowDown'){e.preventDefault();if(t.hi<HIST.length-1){t.hi++;t.inp.value=HIST[t.hi]}else{t.hi=HIST.length;t.inp.value=''}return}
+ if(e.key==='Enter')return}
+/* wireshark viewer */
+let WP=[];
+function openWire(f,pk){WP=pk;$('#wst').textContent='Wireshark (simulated viewer) - '+f;$('#wf').value='';$('#ws').classList.add('on');drawWire();setTimeout(()=>$('#wf').focus(),0)}
+function wfOk(q){q=q.trim().toLowerCase();if(!q)return{ok:1,f:()=>true};let m=/^tcp\.port\s*==\s*(\d+)$/.exec(q);if(m)return{ok:1,f:p=>p.proto==='tcp'&&(p.sp==m[1]||p.dp==m[1])};m=/^ip\.addr\s*==\s*([\d.]+)$/.exec(q);if(m)return{ok:1,f:p=>p.src===m[1]||p.dst===m[1]};
+ if(q==='tcp')return{ok:1,f:p=>p.proto==='tcp'};if(q==='icmp')return{ok:1,f:p=>p.proto==='icmp'};if(q==='http')return{ok:1,f:p=>p.app&&/^(GET|HEAD|HTTP)/.test(p.app)};return{ok:0}}
+function drawWire(){const q=$('#wf').value,r=wfOk(q);$('#wf').className=!q.trim()?'':r.ok?'ok':'bad';if(!r.ok)return;const t0=WP.length?WP[0].ts*1000+WP[0].us:0;
+ $('#wb').innerHTML=WP.map((p,i)=>({p,i})).filter(x=>r.f(x.p)).map(({p,i})=>{const http=p.app&&/^(GET|HEAD|HTTP)/.test(p.app);const info=p.proto==='icmp'?p.txt:http?p.app:(p.sp+' → '+p.dp+' ['+p.fl+'] '+p.txt.replace(/^Flags \[[^\]]*\], /,''));
+  return '<tr class="'+(http?'h':p.fl==='S'||p.fl==='S.'?'s':'')+'"><td>'+(i+1)+'</td><td>'+(((p.ts*1000+p.us)-t0)/1e6).toFixed(6)+'</td><td>'+p.src+'</td><td>'+p.dst+'</td><td>'+(p.proto==='icmp'?'ICMP':http?'HTTP':'TCP')+'</td><td>'+(66+(p.len||0))+'</td><td>'+esc(info)+'</td></tr>'}).join('')}
+$('#wf').addEventListener('input',drawWire);$('#wx').addEventListener('click',()=>$('#ws').classList.remove('on'));document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#ws').classList.remove('on')});
+/* controls */
+$('#nt').addEventListener('click',()=>newTab());
+let fs=14;const setFs=n=>{fs=Math.max(11,Math.min(22,n));document.documentElement.style.setProperty('--fs',fs+'px')};$('#fz1').onclick=()=>setFs(fs-1);$('#fz2').onclick=()=>setFs(fs+1);
+$('#fast').checked=FAST;$('#fast').addEventListener('change',e=>{FAST=e.target.checked;persist()});
+$('#rst').addEventListener('click',()=>{if(confirm('Reset the lab? This deletes all your practice files and progress in this browser.')){['bikali-fs','bikali-hist','bikali-used'].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});location.reload()}});
+/* start */
+const t1=newTab();outText(t1,'\x1b[1;36mBlack Ice · Kali Terminal Simulator\x1b[0m  by xen0byt3\n\x1b[2mA safe practice sandbox: files stay in your browser and network results are simulated samples.\x1b[0m\nType \x1b[1;32mhelp\x1b[0m to see the commands. sudo password: \x1b[1;33mkali\x1b[0m\n\n');
+renderChips();setPrompt(t1);
+</script>
+<script>
+/* Kali desktop: animated file manager, desktop icons, notifications */
+const RM=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+let animOn=!RM,fmPath=HOME,follow=true,fmView='icons',zt=10;
+try{if(localStorage.getItem('bikali-anim')==='0')animOn=false}catch(e){}
+const parentOf=p=>p.slice(0,p.lastIndexOf('/'))||'/',baseOf=p=>p.slice(p.lastIndexOf('/')+1);
+const PLACES=[['Home',HOME],['Desktop',HOME+'/Desktop'],['Documents',HOME+'/Documents'],['Downloads',HOME+'/Downloads'],['Pictures',HOME+'/Pictures'],['File System','/']];
+function snap(n,p,o){n=n||R;p=p||'';o=o||{};if(n.t==='d')for(const k in n.ch){const c=n.ch[k],q=p+'/'+k;o[q]=c.t==='d'?'d|'+c.o:'f|'+c.o+'|'+c.m+'|'+fsize(c)+'|'+c.mt;if(c.t==='d')snap(c,q,o)}return o}
+let PREV=snap();
+function diffFS(line){const cur=snap(),ev={added:[],removed:[],mod:[],how:/\bshred\b/.test(line)?'shred':/\brm\b/.test(line)?'rm':/\bmv\b/.test(line)?'mv':/\bcp\b/.test(line)?'cp':''};
+ for(const k in cur){if(!(k in PREV))ev.added.push(k);else if(PREV[k]!==cur[k]&&cur[k][0]==='f')ev.mod.push(k)}for(const k in PREV)if(!(k in cur))ev.removed.push(k);PREV=cur;return ev}
+const mkPane=()=>({path:null,view:null,names:[],html:{},types:{}});
+const FMP=mkPane(),DKP=mkPane();
+function kindOf(n,name){if(n.t==='d')return'fld';return n.pcap?'fil pc':/\.sh$/i.test(name)?'fil sh':'fil'}
+function itemHtml(name,n,view,cls){const ext=n.t==='f'&&name.includes('.')?name.split('.').pop().slice(0,4).toUpperCase():'';
+ const bd=(n.o==='root'?'<i class="rt">root</i>':'')+(n.t==='f'&&(n.m&0o111)?'<i class="xb">x</i>':'');
+ if(view==='list')return'<div class="it row '+cls+'" data-n="'+esc(name)+'" data-k="'+n.t+'"><span class="nm"><u class="mi '+n.t+'"></u>'+esc(name)+'</span><em>'+(n.t==='d'?'folder':fsize(n)+' B')+'</em><em class="mono">'+modeStr(n)+'</em><em>'+n.o+'</em></div>';
+ return'<div class="it '+cls+'" data-n="'+esc(name)+'" data-k="'+n.t+'" title="'+esc(modeStr(n)+'  '+n.o)+'"><div class="ic '+kindOf(n,name)+'">'+(n.t==='f'?'<b>'+esc(ext)+'</b>':'')+bd+'</div><span>'+esc(name)+'</span></div>'}
+const cmpNames=(a,b)=>a.d!==b.d?(a.d?-1:1):a.x.toLowerCase()<b.x.toLowerCase()?-1:a.x.toLowerCase()>b.x.toLowerCase()?1:0;
+function paneRender(box,P,path,view,ev){const n=getN(path);if(!n||n.t!=='d')return false;
+ const names=Object.keys(n.ch).filter(x=>!x.startsWith('.'));const same=!!(ev&&animOn&&P.path===path&&P.view===view);const newS=new Set(),modS=new Set();
+ if(same)names.forEach(x=>{const full=(path==='/'?'':path)+'/'+x;if(!P.names.includes(x))newS.add(x);else if(ev.mod.includes(full))modS.add(x)});
+ const items=names.map(x=>({x,d:n.ch[x].t==='d',n:n.ch[x],cls:newS.has(x)?'pop':modS.has(x)?'mod':''}));
+ if(same)P.names.filter(x=>!names.includes(x)).forEach(x=>items.push({x,d:P.types[x]==='d',ghost:1,html:P.html[x]}));
+ items.sort(cmpNames);
+ box.innerHTML=items.map(i=>i.ghost?i.html.replace('class="it ','class="it ghost '+(ev.how==='shred'?'shred':'gone')+' '):itemHtml(i.x,i.n,view,i.cls)).join('')+(items.length?'':'<div class="empty">This folder is empty</div>');
+ P.path=path;P.view=view;P.names=names;P.html={};P.types={};names.forEach(x=>{P.html[x]=itemHtml(x,n.ch[x],view,'');P.types[x]=n.ch[x].t});
+ if(box.querySelectorAll)setTimeout(()=>box.querySelectorAll('.ghost').forEach(g=>g.remove()),1300);return true}
+function renderFM(ev){const box=$('#fmmain');box.classList.toggle('fm-list',fmView==='list');
+ if(!paneRender(box,FMP,fmPath,fmView,ev)){fmPath=HOME;paneRender(box,FMP,fmPath,fmView,null)}
+ $('#fmpath').textContent=disp(fmPath);$('#fmt').textContent=(fmPath==='/'?'File System':baseOf(fmPath))+' - File Manager';
+ const c=FMP.names.length;$('#fmstat').textContent=c+' item'+(c===1?'':'s')+(c?'':' (folder is empty)');
+ $('#fmside').innerHTML=PLACES.map(p=>'<li data-p="'+esc(p[1])+'" class="'+(p[1]===fmPath?'on':'')+'">'+esc(p[0])+'</li>').join('');
+ $('#fmf').textContent='Follow terminal: '+(follow?'on':'off');$('#fmup').disabled=fmPath==='/';$('#fmv').textContent=fmView==='list'?'Icons':'List'}
+function renderDesk(ev){$('#dsys').innerHTML=[['Trash','t'],['File System','/'],['Home',HOME]].map(s=>'<div class="it sys" data-p="'+esc(s[1])+'"><div class="ic '+(s[1]==='t'?'fil':'fld')+'">'+(s[1]==='t'?'<b>bin</b>':'')+'</div><span>'+s[0]+'</span></div>').join('');
+ paneRender($('#ditems'),DKP,HOME+'/Desktop',"icons",ev)}
+function notify(kind,title,body){const box=$('#notes'),d=document.createElement('div');d.className='nt '+kind;d.innerHTML='<b>'+esc(title)+'</b>'+esc(body);box.appendChild(d);while(box.children.length>4)box.firstChild.remove();setTimeout(()=>d.remove(),4800)}
+function sumEv(ev){const top=a=>a.filter(p=>!a.includes(parentOf(p))),isD=p=>{const n=getN(p);return n&&n.t==='d'},lst=ps=>ps.slice(0,3).map(disp).join(', ')+(ps.length>3?' +'+(ps.length-3)+' more':'');
+ const A=top(ev.added),R2=top(ev.removed);let k=0;
+ if(ev.how==='mv'&&A.length&&R2.length){notify('md','Moved / renamed',disp(R2[0])+'  →  '+disp(A[0]));k++}
+ else{const D=A.filter(isD),F=A.filter(p=>!isD(p));
+  if(D.length&&k<3){notify('','📁 '+(D.length>1?D.length+' directories':'Directory')+' created',lst(D));k++}
+  if(F.length&&k<3){notify('','📄 '+(F.length>1?F.length+' files ':'File ')+(ev.how==='cp'?'copied':'created'),lst(F));k++}
+  if(R2.length&&k<3){notify('rm',ev.how==='shred'?'🔥 Shredded and removed':'🗑 Removed',lst(R2));k++}}
+ const M=ev.mod.filter(p=>!ev.added.includes(p));if(M.length&&k<3)notify('md','✎ '+(M.length>1?M.length+' files':'File')+' changed',lst(M))}
+function deskUpdate(t){const ev=diffFS(t.lastLine||'');if(follow&&t===act&&getN(t.cwd)&&t.cwd!==fmPath)fmPath=t.cwd;
+ const ch=ev.added.length||ev.removed.length||ev.mod.length;if(ch&&animOn)sumEv(ev);else if(ch)ev.how='';renderDesk(ch?ev:null);renderFM(ch?ev:null)}
+function deskSync(t){if(follow&&t&&getN(t.cwd)){fmPath=t.cwd;renderFM(null)}}
+function openFM(p){fmPath=p;follow=false;$('#fm').classList.remove('hid');front($('#fm'));renderFM(null);tbRefresh()}
+function viewFile(p){const n=getN(p);if(!n||n.t!=='f')return;if(n.pcap){openWire(baseOf(p),n.pcap);return}
+ const ok=n.o===USER?n.m&0o400:n.m&0o004;$('#tvt').textContent=baseOf(p)+(n.o==='root'?'  (owner: root)':'');$('#tvb').textContent=ok?(n.c||'(empty file)'):'Permission denied: you cannot read this file without sudo.';$('#tv').classList.add('on')}
+function front(w){w.style.zIndex=++zt}
+function tbRefresh(){document.querySelectorAll('.tbw').forEach(b=>b.classList.toggle('on',!$('#'+b.dataset.w).classList.contains('hid')))}
+function showWin(id){const w=$('#'+id);w.classList.remove('hid');front(w);tbRefresh();if(id==='win'&&act)act.inp.focus()}
+function selIn(box,it){box.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));it.classList.add('sel')}
+/* interactions */
+$('#fmmain').addEventListener('click',e=>{const it=e.target.closest('.it');if(it)selIn($('#fmmain'),it)});
+$('#fmmain').addEventListener('dblclick',e=>{const it=e.target.closest('.it');if(!it||it.classList.contains('ghost'))return;const p=(fmPath==='/'?'':fmPath)+'/'+it.dataset.n;if(it.dataset.k==='d'){fmPath=p;follow=false;renderFM(null)}else viewFile(p)});
+$('#fmside').addEventListener('click',e=>{const li=e.target.closest('li');if(li){fmPath=li.dataset.p;follow=false;renderFM(null)}});
+$('#fmup').addEventListener('click',()=>{fmPath=parentOf(fmPath);follow=false;renderFM(null)});
+$('#fmf').addEventListener('click',()=>{follow=!follow;if(follow&&act)fmPath=act.cwd;renderFM(null)});
+$('#fmv').addEventListener('click',()=>{fmView=fmView==='list'?'icons':'list';renderFM(null)});
+$('#dicons').addEventListener('click',e=>{const it=e.target.closest('.it');if(it)selIn($('#dicons'),it)});
+$('#dicons').addEventListener('dblclick',e=>{const it=e.target.closest('.it');if(!it)return;if(it.classList.contains('sys')){if(it.dataset.p==='t')notify('md','Trash','The trash is empty (rm deletes straight away).');else openFM(it.dataset.p);return}
+ const p=HOME+'/Desktop/'+it.dataset.n;if(it.dataset.k==='d')openFM(p);else viewFile(p)});
+$('#tvx').addEventListener('click',()=>$('#tv').classList.remove('on'));
+document.querySelectorAll('.w').forEach(w=>{w.addEventListener('mousedown',()=>front(w));
+ w.querySelector('.tbar').addEventListener('pointerdown',e=>{if(e.target.closest('.dots')||e.target.closest('button')||innerWidth<=1100)return;const r=w.getBoundingClientRect(),pr=$('#desk').getBoundingClientRect(),ox=e.clientX-r.left,oy=e.clientY-r.top;
+  w.style.left=(r.left-pr.left)+'px';w.style.top=(r.top-pr.top)+'px';w.style.right='auto';w.style.width=r.width+'px';w.style.height=r.height+'px';w.classList.remove('max');
+  const mv=ev=>{w.style.left=Math.max(0,Math.min(pr.width-90,ev.clientX-pr.left-ox))+'px';w.style.top=Math.max(30,Math.min(pr.height-40,ev.clientY-pr.top-oy))+'px'};const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up)};addEventListener('pointermove',mv);addEventListener('pointerup',up)});
+ w.querySelector('.dots').addEventListener('click',e=>{const b=e.target.closest('i');if(!b)return;if(b.classList.contains('z'))w.classList.toggle('max');else{w.classList.add('hid');tbRefresh()}})});
+document.querySelectorAll('.tbw').forEach(b=>b.addEventListener('click',()=>{const w=$('#'+b.dataset.w);if(w.classList.contains('hid'))showWin(b.dataset.w);else{w.classList.add('hid');tbRefresh()}}));
+$('#appb').addEventListener('click',e=>{e.stopPropagation();$('#appm').classList.toggle('on')});document.addEventListener('click',()=>$('#appm').classList.remove('on'));
+$('#appm').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a;if(a==='term')showWin('win');else if(a==='fm')showWin('fm');else if(a==='ws')notify('md','Wireshark','In the terminal type: wireshark captures/web.pcap &');else if(a==='rst')$('#rst').click()});
+$('#anim').checked=animOn;$('#anim').addEventListener('change',e=>{animOn=e.target.checked;try{localStorage.setItem('bikali-anim',animOn?'1':'0')}catch(x){}});
+const tick=()=>{const d=new Date();$('#clk').textContent=DAY[d.getDay()]+' '+p2(d.getDate())+' '+MON[d.getMonth()]+'  '+p2(d.getHours())+':'+p2(d.getMinutes())};tick();setInterval(tick,15000);
+renderDesk(null);renderFM(null);tbRefresh();
+</script>
+</body>
+</html>
